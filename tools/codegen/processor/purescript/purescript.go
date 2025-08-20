@@ -24,7 +24,6 @@ func (p *Purescript) GetTemplates() fs.FS {
 
 // Purescript record field names should be camelCase
 func recordFieldName(name string) string {
-    // Convert kebab-case or snake_case to camelCase
     parts := strings.FieldsFunc(name, func(r rune) bool {
         return r == '-' || r == '_'
     })
@@ -40,7 +39,6 @@ func recordFieldName(name string) string {
         }
     }
 
-    // Reserved PureScript keywords
     reserved := map[string]bool{
         "type": true, "module": true, "case": true, "class": true,
         "data": true, "newtype": true, "instance": true, "let": true,
@@ -50,7 +48,7 @@ func recordFieldName(name string) string {
     }
 
     if reserved[result] {
-        result += "_" // append underscore if reserved
+        result += "_"
     }
 
     return result
@@ -71,27 +69,55 @@ func lowerFirst(s string) string {
 	return string(r)
 }
 
+// Helper to check if type needs parentheses
 func needsParentheses(typeName string) bool {
-	// Only wrap in parentheses if it's a complex type (contains spaces)
 	return strings.Contains(typeName, " ")
 }
 
+// Helper to check if comment/description is empty or meaningless
 func hasValidDescription(description string) bool {
 	if description == "" {
 		return false
 	}
-	// Trim whitespace and check if it's just empty or placeholder
 	trimmed := strings.TrimSpace(description)
-	return trimmed != "" && trimmed != "-"
+	return trimmed != "" && trimmed != "-" && trimmed != "nil"
+}
+
+// Check if string has prefix
+func hasPrefix(s, prefix string) bool {
+	return strings.HasPrefix(s, prefix)
+}
+
+// Map Go/OpenAPI types to PureScript codec functions
+func getCodecForScalarType(scalarType string, format string) string {
+	switch scalarType {
+	case "integer":
+		return "CJ.int"
+	case "number":
+		return "CJ.number"
+	case "string":
+		if format == "binary" {
+			return "CJ.string" // Blob as base64 string in JSON
+		}
+		return "CJ.string"
+	case "boolean":
+		return "CJ.boolean"
+	case "null":
+		return "CJ.null"
+	default:
+		return "CJ.string" // fallback
+	}
 }
 
 func (p *Purescript) GetFuncMap() map[string]any {
 	return map[string]any{
-		"recordFieldName": recordFieldName,
-		"typeName":        typeName,
-		"lowerFirst":      lowerFirst,
-		"needsParentheses":    needsParentheses,
-		"hasValidDescription": hasValidDescription,
+		"recordFieldName":        recordFieldName,
+		"typeName":              typeName,
+		"lowerFirst":            lowerFirst,
+		"needsParentheses":      needsParentheses,
+		"hasValidDescription":   hasValidDescription,
+		"hasPrefix":             hasPrefix,
+		"getCodecForScalarType": getCodecForScalarType,
 	}
 }
 
@@ -107,7 +133,7 @@ func (p *Purescript) TypeScalarName(scalar *processor.TypeScalar) string {
 		return "Number"
 	case "string":
 		if scalar.Schema().Schema().Format == "binary" {
-			return "Blob" // We'll need to import this from a web API module
+			return "Blob"
 		}
 		return "String"
 	case "boolean":
@@ -115,8 +141,7 @@ func (p *Purescript) TypeScalarName(scalar *processor.TypeScalar) string {
 	case "null":
 		return "Unit"
 	}
-
-	return "String" // Default fallback
+	return "String"
 }
 
 func (p *Purescript) TypeArrayName(array *processor.TypeArray) string {
@@ -135,10 +160,8 @@ func (p *Purescript) TypeEnumValues(values []any) []string {
 
 	for i, v := range values {
 		if s, ok := v.(string); ok {
-			// Purescript ADT constructors should be PascalCase
 			enumValues[i] = typeName(s)
 		} else {
-			// For non-string values, we'll create a constructor name
 			enumValues[i] = fmt.Sprintf("Value%v", v)
 		}
 	}
@@ -150,12 +173,11 @@ func (p *Purescript) TypeMapName(schema *processor.TypeMap) string {
 	if v, ok := schema.Schema().Schema().Extensions.Get(extCustomType); ok {
 		return v.Value
 	}
-
-	return "Object" // Purescript's generic object type
+	return "Object"
 }
 
 func (p *Purescript) MethodName(name string) string {
-	return format.AntiTitle(format.ToCamelCase(name))
+	return format.ToCamelCase(name) // Preserve proper camelCase
 }
 
 func (p *Purescript) MethodPath(name string) string {
@@ -168,15 +190,6 @@ func (p *Purescript) ParameterName(name string) string {
 
 func (p *Purescript) BinaryType() string {
 	return "Blob"
-}
-
-func (p *Purescript) IsMultipartRequest(method *processor.Method) bool {
-    for contentType := range method.Bodies {
-        if strings.Contains(contentType, "multipart/form-data") {
-            return true
-        }
-    }
-    return false
 }
 
 // Modified property name to handle array fields correctly
@@ -193,13 +206,4 @@ func (p *Purescript) PropertyName(name string) string {
     }
 
     return recordFieldName(name)
-}
-
-// Add method to generate proper field names for JSON encoding
-func (p *Purescript) JSONFieldName(originalName string) string {
-    // For multipart fields, preserve the original structure
-    if strings.Contains(originalName, "-") || strings.Contains(originalName, "[]") {
-        return originalName
-    }
-    return originalName
 }

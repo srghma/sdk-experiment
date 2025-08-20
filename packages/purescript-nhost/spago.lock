@@ -6,19 +6,19 @@
         "core": {
           "dependencies": [
             "aff",
-            "argonaut-codecs",
-            "argonaut-core",
+            "codec-json",
             "console",
             "effect",
+            "json",
             "prelude",
             "web-file"
           ],
           "build_plan": [
             "aff",
-            "argonaut-codecs",
-            "argonaut-core",
             "arrays",
             "bifunctors",
+            "codec",
+            "codec-json",
             "console",
             "const",
             "contravariant",
@@ -39,6 +39,7 @@
             "identity",
             "integers",
             "invariant",
+            "json",
             "lazy",
             "lists",
             "maybe",
@@ -65,6 +66,7 @@
             "typelevel-prelude",
             "unfoldable",
             "unsafe-coerce",
+            "variant",
             "web-dom",
             "web-events",
             "web-file"
@@ -650,42 +652,6 @@
         "unsafe-coerce"
       ]
     },
-    "argonaut-codecs": {
-      "type": "registry",
-      "version": "9.1.0",
-      "integrity": "sha256-N6efXByUeg848ompEqJfVvZuZPfdRYDGlTDFn0G0Oh8=",
-      "dependencies": [
-        "argonaut-core",
-        "arrays",
-        "effect",
-        "foreign-object",
-        "identity",
-        "integers",
-        "maybe",
-        "nonempty",
-        "ordered-collections",
-        "prelude",
-        "record"
-      ]
-    },
-    "argonaut-core": {
-      "type": "registry",
-      "version": "7.0.0",
-      "integrity": "sha256-RC82GfAjItydxrO24cdX373KHVZiLqybu19b5X8u7B4=",
-      "dependencies": [
-        "arrays",
-        "control",
-        "either",
-        "foreign-object",
-        "functions",
-        "gen",
-        "maybe",
-        "nonempty",
-        "prelude",
-        "strings",
-        "tailrec"
-      ]
-    },
     "arrays": {
       "type": "registry",
       "version": "7.3.0",
@@ -717,6 +683,29 @@
         "newtype",
         "prelude",
         "tuples"
+      ]
+    },
+    "codec": {
+      "type": "registry",
+      "version": "6.1.0",
+      "integrity": "sha256-6vMLNlsJxQarVQ9cn1FYfl5x6opfzxAza15SzRdxFxQ=",
+      "dependencies": [
+        "bifunctors",
+        "profunctor"
+      ]
+    },
+    "codec-json": {
+      "type": "registry",
+      "version": "2.0.0",
+      "integrity": "sha256-NLm5BmDZKKexQwtnoZ/NI4yI16srsqIe0M7NdlqB96U=",
+      "dependencies": [
+        "codec",
+        "foreign-object",
+        "json",
+        "ordered-collections",
+        "transformers",
+        "type-equality",
+        "variant"
       ]
     },
     "console": {
@@ -975,6 +964,23 @@
       "dependencies": [
         "control",
         "prelude"
+      ]
+    },
+    "json": {
+      "type": "registry",
+      "version": "1.1.0",
+      "integrity": "sha256-LuN8PyX/gvRR4/7X7M9P+zL7BKbv34NcUE/7MILXQSA=",
+      "dependencies": [
+        "either",
+        "foldable-traversable",
+        "functions",
+        "gen",
+        "integers",
+        "maybe",
+        "prelude",
+        "strings",
+        "tuples",
+        "unfoldable"
       ]
     },
     "lazy": {
@@ -1280,6 +1286,21 @@
       "version": "6.0.0",
       "integrity": "sha256-IqIYW4Vkevn8sI+6aUwRGvd87tVL36BBeOr0cGAE7t0=",
       "dependencies": []
+    },
+    "variant": {
+      "type": "registry",
+      "version": "8.0.0",
+      "integrity": "sha256-SR//zQDg2dnbB8ZHslcxieUkCeNlbMToapvmh9onTtw=",
+      "dependencies": [
+        "enums",
+        "lists",
+        "maybe",
+        "partial",
+        "prelude",
+        "record",
+        "tuples",
+        "unsafe-coerce"
+      ]
     },
     "web-dom": {
       "type": "registry",

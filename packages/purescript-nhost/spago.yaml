@@ -4,10 +4,12 @@ package:
     - console
     - effect
     - prelude
-    - argonaut-core
     - web-file
     - aff
-    - argonaut-codecs
+    - json
+    - codec-json
+    # - argonaut-core
+    # - argonaut-codecs
   test:
     main: Test.Main
     dependencies: []

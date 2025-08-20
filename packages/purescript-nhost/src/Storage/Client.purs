@@ -5,20 +5,25 @@ import Prelude
 
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
-import Data.Argonaut.Core (Json)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson, (.:), (.:?))
-import Data.Argonaut.Encode (class EncodeJson, encodeJson, (:=), (~>))
-import Data.Maybe (Maybe)
-import Data.Either (Either)
+import Data.Maybe (Maybe(..))
+import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff, throwError)
 import Effect.Class (liftEffect)
 import Foreign.Object (Object)
 import Web.File.Blob (Blob)
+import JSON as J
+import JSON.Object as JO
+import Data.Codec.JSON.Common as CJ
+import Data.Codec.JSON.Record as CJR
+import Data.Codec.JSON.Strict as CJS
 
 -- | Date in RFC 2822 format
 type RFC2822Date = String
+
+rfc2822dateCodec :: CJ.Codec RFC2822Date
+rfc2822dateCodec = CJ.string
 -- | Error details.
 -- |
 -- | * `message`: `String` -
@@ -27,19 +32,20 @@ type RFC2822Date = String
 -- | * `data_` (Optional): `Object` -
 -- | Additional data related to the error, if any.
 type ErrorResponseError =
-  { message :: String --
-  -- | Human-readable error message.
-  -- | Example: `"File not found"`
+  {message :: String --
+-- | Human-readable error message.
+-- | Example: `"File not found"`
   , data_ :: Maybe (Object) --
-  -- | Additional data related to the error, if any.
+-- | Additional data related to the error, if any.
   }
 
 -- JSON instances for ErrorResponseError
 instance encodeJsonErrorResponseError :: EncodeJson ErrorResponseError where
   encodeJson record =
     "message" := record.message
-      ~> "data_" := record.data_
-      ~> jsonEmptyObject
+
+    ~> "data_" := record.data_
+    ~> jsonEmptyObject
 
 instance decodeJsonErrorResponseError :: DecodeJson ErrorResponseError where
   decodeJson json = do
@@ -47,28 +53,26 @@ instance decodeJsonErrorResponseError :: DecodeJson ErrorResponseError where
     message <- obj .: "message"
     data_ <- obj .:? "data_"
     pure { message, data_ }
-
 -- | Error information returned by the API.
 -- |
 -- | * `error` (Optional): `ErrorResponseError` -
 -- | Error details.
 type ErrorResponse =
-  { error :: Maybe (ErrorResponseError) --
-  -- | Error details.
+  {error :: Maybe (ErrorResponseError) --
+-- | Error details.
   }
 
 -- JSON instances for ErrorResponse
 instance encodeJsonErrorResponse :: EncodeJson ErrorResponse where
   encodeJson record =
     "error" := record.error
-      ~> jsonEmptyObject
+    ~> jsonEmptyObject
 
 instance decodeJsonErrorResponse :: DecodeJson ErrorResponse where
   decodeJson json = do
     obj <- decodeJson json
     error <- obj .:? "error"
     pure { error }
-
 -- | Error details.
 -- |
 -- | * `message`: `String` -
@@ -77,19 +81,20 @@ instance decodeJsonErrorResponse :: DecodeJson ErrorResponse where
 -- | * `data_` (Optional): `Object` -
 -- | Additional data related to the error, if any.
 type ErrorResponseWithProcessedFilesError =
-  { message :: String --
-  -- | Human-readable error message.
-  -- | Example: `"File not found"`
+  {message :: String --
+-- | Human-readable error message.
+-- | Example: `"File not found"`
   , data_ :: Maybe (Object) --
-  -- | Additional data related to the error, if any.
+-- | Additional data related to the error, if any.
   }
 
 -- JSON instances for ErrorResponseWithProcessedFilesError
 instance encodeJsonErrorResponseWithProcessedFilesError :: EncodeJson ErrorResponseWithProcessedFilesError where
   encodeJson record =
     "message" := record.message
-      ~> "data_" := record.data_
-      ~> jsonEmptyObject
+
+    ~> "data_" := record.data_
+    ~> jsonEmptyObject
 
 instance decodeJsonErrorResponseWithProcessedFilesError :: DecodeJson ErrorResponseWithProcessedFilesError where
   decodeJson json = do
@@ -97,7 +102,6 @@ instance decodeJsonErrorResponseWithProcessedFilesError :: DecodeJson ErrorRespo
     message <- obj .: "message"
     data_ <- obj .:? "data_"
     pure { message, data_ }
-
 -- | Error information returned by the API.
 -- |
 -- | * `processedfiles` (Optional): `Array FileMetadata` -
@@ -105,18 +109,19 @@ instance decodeJsonErrorResponseWithProcessedFilesError :: DecodeJson ErrorRespo
 -- | * `error` (Optional): `ErrorResponseWithProcessedFilesError` -
 -- | Error details.
 type ErrorResponseWithProcessedFiles =
-  { processedfiles :: Maybe (Array FileMetadata) --
-  -- | List of files that were successfully processed before the error occurred.
+  {processedfiles :: Maybe (Array FileMetadata) --
+-- | List of files that were successfully processed before the error occurred.
   , error :: Maybe (ErrorResponseWithProcessedFilesError) --
-  -- | Error details.
+-- | Error details.
   }
 
 -- JSON instances for ErrorResponseWithProcessedFiles
 instance encodeJsonErrorResponseWithProcessedFiles :: EncodeJson ErrorResponseWithProcessedFiles where
   encodeJson record =
     "processedfiles" := record.processedfiles
-      ~> "error" := record.error
-      ~> jsonEmptyObject
+
+    ~> "error" := record.error
+    ~> jsonEmptyObject
 
 instance decodeJsonErrorResponseWithProcessedFiles :: DecodeJson ErrorResponseWithProcessedFiles where
   decodeJson json = do
@@ -124,7 +129,6 @@ instance decodeJsonErrorResponseWithProcessedFiles :: DecodeJson ErrorResponseWi
     processedfiles <- obj .:? "processedfiles"
     error <- obj .:? "error"
     pure { processedfiles, error }
-
 -- | Comprehensive metadata information about a file in storage.
 -- |
 -- | * `id`: `String` -
@@ -164,68 +168,69 @@ instance decodeJsonErrorResponseWithProcessedFiles :: DecodeJson ErrorResponseWi
 -- | Custom metadata associated with the file.
 -- | Example: `{"alt":"Profile picture","category":"avatar"}`
 type FileMetadata =
-  { id :: String --
-  -- | Unique identifier for the file.
-  -- | Example: `"d5e76ceb-77a2-4153-b7da-1f7c115b2ff2"`
+  {id :: String --
+-- | Unique identifier for the file.
+-- | Example: `"d5e76ceb-77a2-4153-b7da-1f7c115b2ff2"`
   , name :: String --
-  -- | Name of the file including extension.
-  -- | Example: `"profile-picture.jpg"`
+-- | Name of the file including extension.
+-- | Example: `"profile-picture.jpg"`
   , size :: Int --
-  -- | Size of the file in bytes.
-  -- | Example: `245678`
-  -- | Format: int64
+-- | Size of the file in bytes.
+-- | Example: `245678`
+-- | Format: int64
   , bucketid :: String --
-  -- | ID of the bucket containing the file.
-  -- | Example: `"users-bucket"`
+-- | ID of the bucket containing the file.
+-- | Example: `"users-bucket"`
   , etag :: String --
-  -- | Entity tag for cache validation.
-  -- | Example: `"\"a1b2c3d4e5f6\""`
+-- | Entity tag for cache validation.
+-- | Example: `"\"a1b2c3d4e5f6\""`
   , createdat :: String --
-  -- | Timestamp when the file was created.
-  -- | Example: `"2023-01-15T12:34:56Z"`
-  -- | Format: date-time
+-- | Timestamp when the file was created.
+-- | Example: `"2023-01-15T12:34:56Z"`
+-- | Format: date-time
   , updatedat :: String --
-  -- | Timestamp when the file was last updated.
-  -- | Example: `"2023-01-16T09:45:32Z"`
-  -- | Format: date-time
+-- | Timestamp when the file was last updated.
+-- | Example: `"2023-01-16T09:45:32Z"`
+-- | Format: date-time
   , isuploaded :: Boolean --
-  -- | Whether the file has been successfully uploaded.
-  -- | Example: `true`
+-- | Whether the file has been successfully uploaded.
+-- | Example: `true`
   , mimetype :: String --
-  -- | MIME type of the file.
-  -- | Example: `"image/jpeg"`
+-- | MIME type of the file.
+-- | Example: `"image/jpeg"`
   , uploadedbyuserid :: Maybe (String) --
-  -- | ID of the user who uploaded the file.
-  -- | Example: `"abc123def456"`
+-- | ID of the user who uploaded the file.
+-- | Example: `"abc123def456"`
   , metadata :: Maybe (Object) --
-  -- | Custom metadata associated with the file.
-  -- | Example: `{"alt":"Profile picture","category":"avatar"}`
+-- | Custom metadata associated with the file.
+-- | Example: `{"alt":"Profile picture","category":"avatar"}`
   }
 
 -- JSON instances for FileMetadata
 instance encodeJsonFileMetadata :: EncodeJson FileMetadata where
   encodeJson record =
     "id" := record.id
-      ~> "name" := record.name
 
-      ~> "size" := record.size
+    ~> "name" := record.name
 
-      ~> "bucketid" := record.bucketid
+    ~> "size" := record.size
 
-      ~> "etag" := record.etag
+    ~> "bucketid" := record.bucketid
 
-      ~> "createdat" := record.createdat
+    ~> "etag" := record.etag
 
-      ~> "updatedat" := record.updatedat
+    ~> "createdat" := record.createdat
 
-      ~> "isuploaded" := record.isuploaded
+    ~> "updatedat" := record.updatedat
 
-      ~> "mimetype" := record.mimetype
+    ~> "isuploaded" := record.isuploaded
 
-      ~> "uploadedbyuserid" := record.uploadedbyuserid
+    ~> "mimetype" := record.mimetype
 
-      ~> "metadata" := record.metadata
-      ~> jsonEmptyObject
+    ~> "uploadedbyuserid" := record.uploadedbyuserid
+
+    ~> "metadata" := record.metadata
+    ~> jsonEmptyObject
 
 instance decodeJsonFileMetadata :: DecodeJson FileMetadata where
   decodeJson json = do
@@ -242,7 +247,6 @@ instance decodeJsonFileMetadata :: DecodeJson FileMetadata where
     uploadedbyuserid <- obj .:? "uploadedbyuserid"
     metadata <- obj .:? "metadata"
     pure { id, name, size, bucketid, etag, createdat, updatedat, isuploaded, mimetype, uploadedbyuserid, metadata }
-
 -- | Basic information about a file in storage.
 -- |
 -- | * `id`: `String` -
@@ -258,30 +262,31 @@ instance decodeJsonFileMetadata :: DecodeJson FileMetadata where
 -- | Whether the file has been successfully uploaded.
 -- | Example: `true`
 type FileSummary =
-  { id :: String --
-  -- | Unique identifier for the file.
-  -- | Example: `"d5e76ceb-77a2-4153-b7da-1f7c115b2ff2"`
+  {id :: String --
+-- | Unique identifier for the file.
+-- | Example: `"d5e76ceb-77a2-4153-b7da-1f7c115b2ff2"`
   , name :: String --
-  -- | Name of the file including extension.
-  -- | Example: `"profile-picture.jpg"`
+-- | Name of the file including extension.
+-- | Example: `"profile-picture.jpg"`
   , bucketid :: String --
-  -- | ID of the bucket containing the file.
-  -- | Example: `"users-bucket"`
+-- | ID of the bucket containing the file.
+-- | Example: `"users-bucket"`
   , isuploaded :: Boolean --
-  -- | Whether the file has been successfully uploaded.
-  -- | Example: `true`
+-- | Whether the file has been successfully uploaded.
+-- | Example: `true`
   }
 
 -- JSON instances for FileSummary
 instance encodeJsonFileSummary :: EncodeJson FileSummary where
   encodeJson record =
     "id" := record.id
-      ~> "name" := record.name
 
-      ~> "bucketid" := record.bucketid
+    ~> "name" := record.name
 
-      ~> "isuploaded" := record.isuploaded
-      ~> jsonEmptyObject
+    ~> "bucketid" := record.bucketid
+
+    ~> "isuploaded" := record.isuploaded
+    ~> jsonEmptyObject
 
 instance decodeJsonFileSummary :: DecodeJson FileSummary where
   decodeJson json = do
@@ -291,7 +296,6 @@ instance decodeJsonFileSummary :: DecodeJson FileSummary where
     bucketid <- obj .: "bucketid"
     isuploaded <- obj .: "isuploaded"
     pure { id, name, bucketid, isuploaded }
-
 -- | Contains a presigned URL for direct file operations.
 -- |
 -- | * `url`: `String` -
@@ -301,20 +305,21 @@ instance decodeJsonFileSummary :: DecodeJson FileSummary where
 -- | The time in seconds until the URL expires.
 -- | Example: `3600`
 type PresignedURLResponse =
-  { url :: String --
-  -- | The presigned URL for file operations.
-  -- | Example: `"https://storage.example.com/files/abc123?signature=xyz"`
+  {url :: String --
+-- | The presigned URL for file operations.
+-- | Example: `"https://storage.example.com/files/abc123?signature=xyz"`
   , expiration :: Int --
-  -- | The time in seconds until the URL expires.
-  -- | Example: `3600`
+-- | The time in seconds until the URL expires.
+-- | Example: `3600`
   }
 
 -- JSON instances for PresignedURLResponse
 instance encodeJsonPresignedURLResponse :: EncodeJson PresignedURLResponse where
   encodeJson record =
     "url" := record.url
-      ~> "expiration" := record.expiration
-      ~> jsonEmptyObject
+
+    ~> "expiration" := record.expiration
+    ~> jsonEmptyObject
 
 instance decodeJsonPresignedURLResponse :: DecodeJson PresignedURLResponse where
   decodeJson json = do
@@ -322,7 +327,6 @@ instance decodeJsonPresignedURLResponse :: DecodeJson PresignedURLResponse where
     url <- obj .: "url"
     expiration <- obj .: "expiration"
     pure { url, expiration }
-
 -- | Metadata that can be updated for an existing file.
 -- |
 -- | * `name` (Optional): `String` -
@@ -332,20 +336,21 @@ instance decodeJsonPresignedURLResponse :: DecodeJson PresignedURLResponse where
 -- | Updated custom metadata to associate with the file.
 -- | Example: `{"alt":"Updated image description","category":"profile"}`
 type UpdateFileMetadata =
-  { name :: Maybe (String) --
-  -- | New name to assign to the file.
-  -- | Example: `"renamed-file.jpg"`
+  {name :: Maybe (String) --
+-- | New name to assign to the file.
+-- | Example: `"renamed-file.jpg"`
   , metadata :: Maybe (Object) --
-  -- | Updated custom metadata to associate with the file.
-  -- | Example: `{"alt":"Updated image description","category":"profile"}`
+-- | Updated custom metadata to associate with the file.
+-- | Example: `{"alt":"Updated image description","category":"profile"}`
   }
 
 -- JSON instances for UpdateFileMetadata
 instance encodeJsonUpdateFileMetadata :: EncodeJson UpdateFileMetadata where
   encodeJson record =
     "name" := record.name
-      ~> "metadata" := record.metadata
-      ~> jsonEmptyObject
+
+    ~> "metadata" := record.metadata
+    ~> jsonEmptyObject
 
 instance decodeJsonUpdateFileMetadata :: DecodeJson UpdateFileMetadata where
   decodeJson json = do
@@ -353,7 +358,6 @@ instance decodeJsonUpdateFileMetadata :: DecodeJson UpdateFileMetadata where
     name <- obj .:? "name"
     metadata <- obj .:? "metadata"
     pure { name, metadata }
-
 -- | Metadata provided when uploading a new file.
 -- |
 -- | * `id` (Optional): `String` -
@@ -366,25 +370,26 @@ instance decodeJsonUpdateFileMetadata :: DecodeJson UpdateFileMetadata where
 -- | Custom metadata to associate with the file.
 -- | Example: `{"alt":"Custom image","category":"document"}`
 type UploadFileMetadata =
-  { id :: Maybe (String) --
-  -- | Optional custom ID for the file. If not provided, a UUID will be generated.
-  -- | Example: `"custom-id-123"`
+  {id :: Maybe (String) --
+-- | Optional custom ID for the file. If not provided, a UUID will be generated.
+-- | Example: `"custom-id-123"`
   , name :: Maybe (String) --
-  -- | Name to assign to the file. If not provided, the original filename will be used.
-  -- | Example: `"custom-filename.png"`
+-- | Name to assign to the file. If not provided, the original filename will be used.
+-- | Example: `"custom-filename.png"`
   , metadata :: Maybe (Object) --
-  -- | Custom metadata to associate with the file.
-  -- | Example: `{"alt":"Custom image","category":"document"}`
+-- | Custom metadata to associate with the file.
+-- | Example: `{"alt":"Custom image","category":"document"}`
   }
 
 -- JSON instances for UploadFileMetadata
 instance encodeJsonUploadFileMetadata :: EncodeJson UploadFileMetadata where
   encodeJson record =
     "id" := record.id
-      ~> "name" := record.name
 
-      ~> "metadata" := record.metadata
-      ~> jsonEmptyObject
+    ~> "name" := record.name
+
+    ~> "metadata" := record.metadata
+    ~> jsonEmptyObject
 
 instance decodeJsonUploadFileMetadata :: DecodeJson UploadFileMetadata where
   decodeJson json = do
@@ -393,23 +398,22 @@ instance decodeJsonUploadFileMetadata :: DecodeJson UploadFileMetadata where
     name <- obj .:? "name"
     metadata <- obj .:? "metadata"
     pure { id, name, metadata }
-
 -- | Contains version information about the storage service.
 -- |
 -- | * `buildversion`: `String` -
 -- | The version number of the storage service build.
 -- | Example: `"1.2.3"`
 type VersionInformation =
-  { buildversion :: String --
-  -- | The version number of the storage service build.
-  -- | Example: `"1.2.3"`
+  {buildversion :: String --
+-- | The version number of the storage service build.
+-- | Example: `"1.2.3"`
   }
 
 -- JSON instances for VersionInformation
 instance encodeJsonVersionInformation :: EncodeJson VersionInformation where
   encodeJson record =
     "buildversion" := record.buildversion
-      ~> jsonEmptyObject
+    ~> jsonEmptyObject
 
 instance decodeJsonVersionInformation :: DecodeJson VersionInformation where
   decodeJson json = do
@@ -433,27 +437,25 @@ derive instance ordOutputImageFormat :: Ord OutputImageFormat
 instance showOutputImageFormat :: Show OutputImageFormat where
   show = genericShow
 
-instance encodeJsonOutputImageFormat :: EncodeJson OutputImageFormat where
-  encodeJson = case _ of
-    OutputImageFormat_Auto -> encodeJson "Auto"
-    OutputImageFormat_Same -> encodeJson "Same"
-    OutputImageFormat_Jpeg -> encodeJson "Jpeg"
-    OutputImageFormat_Webp -> encodeJson "Webp"
-    OutputImageFormat_Png -> encodeJson "Png"
-    OutputImageFormat_Avif -> encodeJson "Avif"
+outputimageformatCodec :: CJ.Codec OutputImageFormat
+outputimageformatCodec = CJ.prismaticCodec "OutputImageFormat" dec enc CJ.string
+  where
+    dec = case _ of
+      "Auto" -> Just OutputImageFormat_Auto
+      "Same" -> Just OutputImageFormat_Same
+      "Jpeg" -> Just OutputImageFormat_Jpeg
+      "Webp" -> Just OutputImageFormat_Webp
+      "Png" -> Just OutputImageFormat_Png
+      "Avif" -> Just OutputImageFormat_Avif
+      _ -> Nothing
 
-instance decodeJsonOutputImageFormat :: DecodeJson OutputImageFormat where
-  decodeJson json = do
-    str <- decodeJson json
-    case str of
-      "Auto" -> pure OutputImageFormat_Auto
-      "Same" -> pure OutputImageFormat_Same
-      "Jpeg" -> pure OutputImageFormat_Jpeg
-      "Webp" -> pure OutputImageFormat_Webp
-      "Png" -> pure OutputImageFormat_Png
-      "Avif" -> pure OutputImageFormat_Avif
-      _ -> Left $ "Invalid OutputImageFormat: " <> str
-
+    enc = case _ of
+      OutputImageFormat_Auto -> "Auto"
+      OutputImageFormat_Same -> "Same"
+      OutputImageFormat_Jpeg -> "Jpeg"
+      OutputImageFormat_Webp -> "Webp"
+      OutputImageFormat_Png -> "Png"
+      OutputImageFormat_Avif -> "Avif"
 -- |
 -- |
 -- | * `bucketid` (Optional): `String` -
@@ -464,23 +466,24 @@ instance decodeJsonOutputImageFormat :: DecodeJson OutputImageFormat where
 -- | * `filearray`: `Array Blob` -
 -- | Array of files to upload.
 type UploadFilesBody =
-  { bucketid :: Maybe (String) --
-  -- | Target bucket identifier where files will be stored.
-  -- | Example: `"user-uploads"`
+  {bucketid :: Maybe (String) --
+-- | Target bucket identifier where files will be stored.
+-- | Example: `"user-uploads"`
   , metadataarray :: Maybe (Array UploadFileMetadata) --
-  -- | Optional custom metadata for each uploaded file. Must match the order of the file[] array.
+-- | Optional custom metadata for each uploaded file. Must match the order of the file[] array.
   , filearray :: Array Blob --
-  -- | Array of files to upload.
+-- | Array of files to upload.
   }
 
 -- JSON instances for UploadFilesBody
 instance encodeJsonUploadFilesBody :: EncodeJson UploadFilesBody where
   encodeJson record =
     "bucketId" := record.bucketid
-      ~> "metadataArray" := record.metadataarray
 
-      ~> "fileArray" := record.filearray
-      ~> jsonEmptyObject
+    ~> "metadataArray" := record.metadataarray
+
+    ~> "fileArray" := record.filearray
+    ~> jsonEmptyObject
 
 instance decodeJsonUploadFilesBody :: DecodeJson UploadFilesBody where
   decodeJson json = do
@@ -489,28 +492,26 @@ instance decodeJsonUploadFilesBody :: DecodeJson UploadFilesBody where
     metadataarray <- obj .:? "metadataArray"
     filearray <- obj .: "fileArray"
     pure { bucketid, metadataarray, filearray }
-
 -- |
 -- |
 -- | * `processedfiles`: `Array FileMetadata` -
 -- | List of successfully processed files with their metadata.
 type UploadFilesResponse201 =
-  { processedfiles :: Array FileMetadata --
-  -- | List of successfully processed files with their metadata.
+  {processedfiles :: Array FileMetadata --
+-- | List of successfully processed files with their metadata.
   }
 
 -- JSON instances for UploadFilesResponse201
 instance encodeJsonUploadFilesResponse201 :: EncodeJson UploadFilesResponse201 where
   encodeJson record =
     "processedfiles" := record.processedfiles
-      ~> jsonEmptyObject
+    ~> jsonEmptyObject
 
 instance decodeJsonUploadFilesResponse201 :: DecodeJson UploadFilesResponse201 where
   decodeJson json = do
     obj <- decodeJson json
     processedfiles <- obj .: "processedfiles"
     pure { processedfiles }
-
 -- |
 -- |
 -- | * `metadata` (Optional): `UpdateFileMetadata` -
@@ -519,19 +520,20 @@ instance decodeJsonUploadFilesResponse201 :: DecodeJson UploadFilesResponse201 w
 -- | New file content to replace the existing file
 -- | Format: binary
 type ReplaceFileBody =
-  { metadata :: Maybe (UpdateFileMetadata) --
-  -- | Metadata that can be updated for an existing file.
+  {metadata :: Maybe (UpdateFileMetadata) --
+-- | Metadata that can be updated for an existing file.
   , file :: Maybe (Blob) --
-  -- | New file content to replace the existing file
-  -- | Format: binary
+-- | New file content to replace the existing file
+-- | Format: binary
   }
 
 -- JSON instances for ReplaceFileBody
 instance encodeJsonReplaceFileBody :: EncodeJson ReplaceFileBody where
   encodeJson record =
     "metadata" := record.metadata
-      ~> "file" := record.file
-      ~> jsonEmptyObject
+
+    ~> "file" := record.file
+    ~> jsonEmptyObject
 
 instance decodeJsonReplaceFileBody :: DecodeJson ReplaceFileBody where
   decodeJson json = do
@@ -539,130 +541,143 @@ instance decodeJsonReplaceFileBody :: DecodeJson ReplaceFileBody where
     metadata <- obj .:? "metadata"
     file <- obj .:? "file"
     pure { metadata, file }
-
 -- |
 -- |
 -- | * `metadata` (Optional): `Array FileSummary` -
 type DeleteBrokenMetadataResponse200 =
-  { metadata :: Maybe (Array FileSummary) --
+  {metadata :: Maybe (Array FileSummary) --
   }
 
 -- JSON instances for DeleteBrokenMetadataResponse200
 instance encodeJsonDeleteBrokenMetadataResponse200 :: EncodeJson DeleteBrokenMetadataResponse200 where
   encodeJson record =
     "metadata" := record.metadata
-      ~> jsonEmptyObject
+    ~> jsonEmptyObject
 
 instance decodeJsonDeleteBrokenMetadataResponse200 :: DecodeJson DeleteBrokenMetadataResponse200 where
   decodeJson json = do
     obj <- decodeJson json
     metadata <- obj .:? "metadata"
     pure { metadata }
-
 -- |
 -- |
 -- | * `files` (Optional): `Array String` -
 type DeleteOrphanedFilesResponse200 =
-  { files :: Maybe (Array String) --
+  {files :: Maybe (Array String) --
   }
 
 -- JSON instances for DeleteOrphanedFilesResponse200
 instance encodeJsonDeleteOrphanedFilesResponse200 :: EncodeJson DeleteOrphanedFilesResponse200 where
   encodeJson record =
     "files" := record.files
-      ~> jsonEmptyObject
+    ~> jsonEmptyObject
 
 instance decodeJsonDeleteOrphanedFilesResponse200 :: DecodeJson DeleteOrphanedFilesResponse200 where
   decodeJson json = do
     obj <- decodeJson json
     files <- obj .:? "files"
     pure { files }
-
 -- |
 -- |
 -- | * `metadata` (Optional): `Array FileSummary` -
 type ListBrokenMetadataResponse200 =
-  { metadata :: Maybe (Array FileSummary) --
+  {metadata :: Maybe (Array FileSummary) --
   }
 
 -- JSON instances for ListBrokenMetadataResponse200
 instance encodeJsonListBrokenMetadataResponse200 :: EncodeJson ListBrokenMetadataResponse200 where
   encodeJson record =
     "metadata" := record.metadata
-      ~> jsonEmptyObject
+    ~> jsonEmptyObject
 
 instance decodeJsonListBrokenMetadataResponse200 :: DecodeJson ListBrokenMetadataResponse200 where
   decodeJson json = do
     obj <- decodeJson json
     metadata <- obj .:? "metadata"
     pure { metadata }
-
 -- |
 -- |
 -- | * `metadata` (Optional): `Array FileSummary` -
 type ListFilesNotUploadedResponse200 =
-  { metadata :: Maybe (Array FileSummary) --
+  {metadata :: Maybe (Array FileSummary) --
   }
 
 -- JSON instances for ListFilesNotUploadedResponse200
 instance encodeJsonListFilesNotUploadedResponse200 :: EncodeJson ListFilesNotUploadedResponse200 where
   encodeJson record =
     "metadata" := record.metadata
-      ~> jsonEmptyObject
+    ~> jsonEmptyObject
 
 instance decodeJsonListFilesNotUploadedResponse200 :: DecodeJson ListFilesNotUploadedResponse200 where
   decodeJson json = do
     obj <- decodeJson json
     metadata <- obj .:? "metadata"
     pure { metadata }
-
 -- |
 -- |
 -- | * `files` (Optional): `Array String` -
 type ListOrphanedFilesResponse200 =
-  { files :: Maybe (Array String) --
+  {files :: Maybe (Array String) --
   }
 
 -- JSON instances for ListOrphanedFilesResponse200
 instance encodeJsonListOrphanedFilesResponse200 :: EncodeJson ListOrphanedFilesResponse200 where
   encodeJson record =
     "files" := record.files
-      ~> jsonEmptyObject
+    ~> jsonEmptyObject
 
 instance decodeJsonListOrphanedFilesResponse200 :: DecodeJson ListOrphanedFilesResponse200 where
   decodeJson json = do
     obj <- decodeJson json
     files <- obj .:? "files"
     pure { files }
-
--- | Parameters for the getFile method.
+-- | Parameters for the GetFile method.
 type GetFileParams =
-  { q :: Maybe Int -- Image quality (1-100). Only applies to JPEG, WebP and PNG files
+  {q :: Maybe Int -- Image quality (1-100). Only applies to JPEG, WebP and PNG files
   , h :: Maybe Int -- Maximum height to resize image to while maintaining aspect ratio. Only applies to image files
   , w :: Maybe Int -- Maximum width to resize image to while maintaining aspect ratio. Only applies to image files
   , b :: Maybe Number -- Blur the image using this sigma value. Only applies to image files
   , f :: Maybe OutputImageFormat -- Output format for image files. Use 'auto' for content negotiation based on Accept header
   }
 
--- | Parameters for the getFileMetadataHeaders method.
+getfileParamsCodec :: CJ.Codec GetFileParams
+getfileParamsCodec =
+  CJ.object $ CJR.record
+    {q: CJ.maybe CJ.int
+    , h: CJ.maybe CJ.int
+    , w: CJ.maybe CJ.int
+    , b: CJ.maybe CJ.number
+    , f: CJ.maybe outputimageformatCodec
+    }
+-- | Parameters for the GetFileMetadataHeaders method.
 type GetFileMetadataHeadersParams =
-  { q :: Maybe Int -- Image quality (1-100). Only applies to JPEG, WebP and PNG files
+  {q :: Maybe Int -- Image quality (1-100). Only applies to JPEG, WebP and PNG files
   , h :: Maybe Int -- Maximum height to resize image to while maintaining aspect ratio. Only applies to image files
   , w :: Maybe Int -- Maximum width to resize image to while maintaining aspect ratio. Only applies to image files
   , b :: Maybe Number -- Blur the image using this sigma value. Only applies to image files
   , f :: Maybe OutputImageFormat -- Output format for image files. Use 'auto' for content negotiation based on Accept header
   }
+
+getfilemetadataheadersParamsCodec :: CJ.Codec GetFileMetadataHeadersParams
+getfilemetadataheadersParamsCodec =
+  CJ.object $ CJR.record
+    {q: CJ.maybe CJ.int
+    , h: CJ.maybe CJ.int
+    , w: CJ.maybe CJ.int
+    , b: CJ.maybe CJ.number
+    , f: CJ.maybe outputimageformatCodec
+    }
 
 -- | API Client type
--- uploadFiles :: UploadFilesBody -> Aff (FetchResponse UploadFilesResponse201)
--- deleteFile :: String -> Aff (FetchResponse void)
--- getFile :: String -> Maybe GetFileParams -> Aff (FetchResponse Blob)
--- getFileMetadataHeaders :: String -> Maybe GetFileMetadataHeadersParams -> Aff (FetchResponse void)
--- replaceFile :: String -> ReplaceFileBody -> Aff (FetchResponse FileMetadata)
--- getFilePresignedURL :: String -> Aff (FetchResponse PresignedURLResponse)
--- deleteBrokenMetadata :: Aff (FetchResponse DeleteBrokenMetadataResponse200)
--- deleteOrphanedFiles :: Aff (FetchResponse DeleteOrphanedFilesResponse200)
--- listBrokenMetadata :: Aff (FetchResponse ListBrokenMetadataResponse200)
--- listFilesNotUploaded :: Aff (FetchResponse ListFilesNotUploadedResponse200)
--- listOrphanedFiles :: Aff (FetchResponse ListOrphanedFilesResponse200)
--- getVersion :: Aff (FetchResponse VersionInformation)
+type uploadFilesFn :: UploadFilesBody -> Aff (FetchResponse UploadFilesResponse201)
+type deleteFileFn :: String -> Aff (FetchResponse void)
+type getFileFn :: String -> Maybe GetFileParams -> Aff (FetchResponse Blob)
+type getFileMetadataHeadersFn :: String -> Maybe GetFileMetadataHeadersParams -> Aff (FetchResponse void)
+type replaceFileFn :: String -> ReplaceFileBody -> Aff (FetchResponse FileMetadata)
+type getFilePresignedURLFn :: String -> Aff (FetchResponse PresignedURLResponse)
+type deleteBrokenMetadataFn :: Aff (FetchResponse DeleteBrokenMetadataResponse200)
+type deleteOrphanedFilesFn :: Aff (FetchResponse DeleteOrphanedFilesResponse200)
+type listBrokenMetadataFn :: Aff (FetchResponse ListBrokenMetadataResponse200)
+type listFilesNotUploadedFn :: Aff (FetchResponse ListFilesNotUploadedResponse200)
+type listOrphanedFilesFn :: Aff (FetchResponse ListOrphanedFilesResponse200)
+type getVersionFn :: Aff (FetchResponse VersionInformation)
