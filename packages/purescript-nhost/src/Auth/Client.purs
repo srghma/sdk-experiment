@@ -39,99 +39,64 @@ instance showAttestationFormat :: Show AttestationFormat where
 attestationformatCodec :: CJ.Codec AttestationFormat
 attestationformatCodec = CJ.prismaticCodec "AttestationFormat" dec enc CJ.string
   where
-    dec = case _ of
-      "Packed" -> Just AttestationFormat_Packed
-      "Tpm" -> Just AttestationFormat_Tpm
-      "AndroidKey" -> Just AttestationFormat_AndroidKey
-      "AndroidSafetynet" -> Just AttestationFormat_AndroidSafetynet
-      "FidoU2f" -> Just AttestationFormat_FidoU2f
-      "Apple" -> Just AttestationFormat_Apple
-      "None" -> Just AttestationFormat_None
-      _ -> Nothing
+  dec = case _ of
+    "Packed" -> Just AttestationFormat_Packed
+    "Tpm" -> Just AttestationFormat_Tpm
+    "AndroidKey" -> Just AttestationFormat_AndroidKey
+    "AndroidSafetynet" -> Just AttestationFormat_AndroidSafetynet
+    "FidoU2f" -> Just AttestationFormat_FidoU2f
+    "Apple" -> Just AttestationFormat_Apple
+    "None" -> Just AttestationFormat_None
+    _ -> Nothing
 
-    enc = case _ of
-      AttestationFormat_Packed -> "Packed"
-      AttestationFormat_Tpm -> "Tpm"
-      AttestationFormat_AndroidKey -> "AndroidKey"
-      AttestationFormat_AndroidSafetynet -> "AndroidSafetynet"
-      AttestationFormat_FidoU2f -> "FidoU2f"
-      AttestationFormat_Apple -> "Apple"
-      AttestationFormat_None -> "None"
+  enc = case _ of
+    AttestationFormat_Packed -> "Packed"
+    AttestationFormat_Tpm -> "Tpm"
+    AttestationFormat_AndroidKey -> "AndroidKey"
+    AttestationFormat_AndroidSafetynet -> "AndroidSafetynet"
+    AttestationFormat_FidoU2f -> "FidoU2f"
+    AttestationFormat_Apple -> "Apple"
+    AttestationFormat_None -> "None"
+
 -- | Map of extension outputs from the client
 -- |
--- | * `appid` (Optional): `Boolean` -
--- | Application identifier extension output
--- | * `credprops` (Optional): `CredentialPropertiesOutput` -
--- | Credential properties extension output
--- | * `hmaccreatesecret` (Optional): `Boolean` -
--- | HMAC secret extension output
+-- | * `appid` (Optional): `Maybe Boolean` - Application identifier extension output
+-- | * `credprops` (Optional): `Maybe CredentialPropertiesOutput` - Credential properties extension output
+-- | * `hmaccreatesecret` (Optional): `Maybe Boolean` - HMAC secret extension output
 type AuthenticationExtensionsClientOutputs =
-  {appid :: Maybe (Boolean) --
--- | Application identifier extension output
-  , credprops :: Maybe (CredentialPropertiesOutput) --
--- | Credential properties extension output
-  , hmaccreatesecret :: Maybe (Boolean) --
--- | HMAC secret extension output
+  { appid :: Maybe Boolean -- Application identifier extension output
+  , credprops :: Maybe CredentialPropertiesOutput -- Credential properties extension output
+  , hmaccreatesecret :: Maybe Boolean -- HMAC secret extension output
   }
 
--- JSON instances for AuthenticationExtensionsClientOutputs
-instance encodeJsonAuthenticationExtensionsClientOutputs :: EncodeJson AuthenticationExtensionsClientOutputs where
-  encodeJson record =
-    "appid" := record.appid
+authenticationextensionsclientoutputsCodec :: CJ.Codec AuthenticationExtensionsClientOutputs
+authenticationextensionsclientoutputsCodec =
+  CJ.object $ CJR.record
+    { appid: CJR.optional CJ.boolean
+    , credprops: CJR.optional credentialpropertiesoutputCodec
+    , hmaccreatesecret: CJR.optional CJ.boolean
+    }
 
-    ~> "credprops" := record.credprops
-
-    ~> "hmaccreatesecret" := record.hmaccreatesecret
-    ~> jsonEmptyObject
-
-instance decodeJsonAuthenticationExtensionsClientOutputs :: DecodeJson AuthenticationExtensionsClientOutputs where
-  decodeJson json = do
-    obj <- decodeJson json
-    appid <- obj .:? "appid"
-    credprops <- obj .:? "credprops"
-    hmaccreatesecret <- obj .:? "hmaccreatesecret"
-    pure { appid, credprops, hmaccreatesecret }
 -- |
--- |
--- | * `clientdatajson`: `String` -
--- | Base64url encoded client data JSON
--- | * `authenticatordata`: `String` -
--- | Base64url encoded authenticator data
--- | * `signature`: `String` -
--- | Base64url encoded assertion signature
--- | * `userhandle` (Optional): `String` -
--- | Base64url encoded user handle
+-- | * `clientdatajson`: `String` - Base64url encoded client data JSON
+-- | * `authenticatordata`: `String` - Base64url encoded authenticator data
+-- | * `signature`: `String` - Base64url encoded assertion signature
+-- | * `userhandle` (Optional): `Maybe String` - Base64url encoded user handle
 type AuthenticatorAssertionResponse =
-  {clientdatajson :: String --
--- | Base64url encoded client data JSON
-  , authenticatordata :: String --
--- | Base64url encoded authenticator data
-  , signature :: String --
--- | Base64url encoded assertion signature
-  , userhandle :: Maybe (String) --
--- | Base64url encoded user handle
+  { clientdatajson :: String -- Base64url encoded client data JSON
+  , authenticatordata :: String -- Base64url encoded authenticator data
+  , signature :: String -- Base64url encoded assertion signature
+  , userhandle :: Maybe String -- Base64url encoded user handle
   }
 
--- JSON instances for AuthenticatorAssertionResponse
-instance encodeJsonAuthenticatorAssertionResponse :: EncodeJson AuthenticatorAssertionResponse where
-  encodeJson record =
-    "clientdatajson" := record.clientdatajson
-
-    ~> "authenticatordata" := record.authenticatordata
-
-    ~> "signature" := record.signature
-
-    ~> "userhandle" := record.userhandle
-    ~> jsonEmptyObject
-
-instance decodeJsonAuthenticatorAssertionResponse :: DecodeJson AuthenticatorAssertionResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    clientdatajson <- obj .: "clientdatajson"
-    authenticatordata <- obj .: "authenticatordata"
-    signature <- obj .: "signature"
-    userhandle <- obj .:? "userhandle"
-    pure { clientdatajson, authenticatordata, signature, userhandle }
+authenticatorassertionresponseCodec :: CJ.Codec AuthenticatorAssertionResponse
+authenticatorassertionresponseCodec =
+  CJ.object $ CJR.record
+    { clientdatajson: CJ.identity CJ.string
+    , authenticatordata: CJ.identity CJ.string
+    , signature: CJ.identity CJ.string
+    , userhandle: CJR.optional CJ.string
+    }
 
 -- | The authenticator attachment modality
 data AuthenticatorAttachment
@@ -148,120 +113,62 @@ instance showAuthenticatorAttachment :: Show AuthenticatorAttachment where
 authenticatorattachmentCodec :: CJ.Codec AuthenticatorAttachment
 authenticatorattachmentCodec = CJ.prismaticCodec "AuthenticatorAttachment" dec enc CJ.string
   where
-    dec = case _ of
-      "Platform" -> Just AuthenticatorAttachment_Platform
-      "CrossPlatform" -> Just AuthenticatorAttachment_CrossPlatform
-      _ -> Nothing
+  dec = case _ of
+    "Platform" -> Just AuthenticatorAttachment_Platform
+    "CrossPlatform" -> Just AuthenticatorAttachment_CrossPlatform
+    _ -> Nothing
 
-    enc = case _ of
-      AuthenticatorAttachment_Platform -> "Platform"
-      AuthenticatorAttachment_CrossPlatform -> "CrossPlatform"
+  enc = case _ of
+    AuthenticatorAttachment_Platform -> "Platform"
+    AuthenticatorAttachment_CrossPlatform -> "CrossPlatform"
+
 -- |
--- |
--- | * `clientdatajson`: `String` -
--- | Base64url-encoded binary data
--- | Format: byte
--- | * `transports` (Optional): `Array String` -
--- | The authenticator transports
--- | * `authenticatordata` (Optional): `String` -
--- | Base64url-encoded binary data
--- | Format: byte
--- | * `publickey` (Optional): `String` -
--- | Base64url-encoded binary data
--- | Format: byte
--- | * `publickeyalgorithm` (Optional): `Int` -
--- | The public key algorithm identifier
--- | Format: int64
--- | * `attestationobject`: `String` -
--- | Base64url-encoded binary data
--- | Format: byte
+-- | * `clientdatajson`: `String` - Base64url-encoded binary data
+-- | * `transports` (Optional): `Maybe (Array String)` - The authenticator transports
+-- | * `authenticatordata` (Optional): `Maybe String` - Base64url-encoded binary data
+-- | * `publickey` (Optional): `Maybe String` - Base64url-encoded binary data
+-- | * `publickeyalgorithm` (Optional): `Maybe Int` - The public key algorithm identifier
+-- | * `attestationobject`: `String` - Base64url-encoded binary data
 type AuthenticatorAttestationResponse =
-  {clientdatajson :: String --
--- | Base64url-encoded binary data
--- | Format: byte
-  , transports :: Maybe (Array String) --
--- | The authenticator transports
-  , authenticatordata :: Maybe (String) --
--- | Base64url-encoded binary data
--- | Format: byte
-  , publickey :: Maybe (String) --
--- | Base64url-encoded binary data
--- | Format: byte
-  , publickeyalgorithm :: Maybe (Int) --
--- | The public key algorithm identifier
--- | Format: int64
-  , attestationobject :: String --
--- | Base64url-encoded binary data
--- | Format: byte
+  { clientdatajson :: String -- Base64url-encoded binary data
+  , transports :: Maybe (Array String) -- The authenticator transports
+  , authenticatordata :: Maybe String -- Base64url-encoded binary data
+  , publickey :: Maybe String -- Base64url-encoded binary data
+  , publickeyalgorithm :: Maybe Int -- The public key algorithm identifier
+  , attestationobject :: String -- Base64url-encoded binary data
   }
 
--- JSON instances for AuthenticatorAttestationResponse
-instance encodeJsonAuthenticatorAttestationResponse :: EncodeJson AuthenticatorAttestationResponse where
-  encodeJson record =
-    "clientdatajson" := record.clientdatajson
+authenticatorattestationresponseCodec :: CJ.Codec AuthenticatorAttestationResponse
+authenticatorattestationresponseCodec =
+  CJ.object $ CJR.record
+    { clientdatajson: CJ.identity CJ.string
+    , transports: CJR.optional CJ.array CJ.string
+    , authenticatordata: CJR.optional CJ.string
+    , publickey: CJR.optional CJ.string
+    , publickeyalgorithm: CJR.optional CJ.int
+    , attestationobject: CJ.identity CJ.string
+    }
 
-    ~> "transports" := record.transports
-
-    ~> "authenticatordata" := record.authenticatordata
-
-    ~> "publickey" := record.publickey
-
-    ~> "publickeyalgorithm" := record.publickeyalgorithm
-
-    ~> "attestationobject" := record.attestationobject
-    ~> jsonEmptyObject
-
-instance decodeJsonAuthenticatorAttestationResponse :: DecodeJson AuthenticatorAttestationResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    clientdatajson <- obj .: "clientdatajson"
-    transports <- obj .:? "transports"
-    authenticatordata <- obj .:? "authenticatordata"
-    publickey <- obj .:? "publickey"
-    publickeyalgorithm <- obj .:? "publickeyalgorithm"
-    attestationobject <- obj .: "attestationobject"
-    pure { clientdatajson, transports, authenticatordata, publickey, publickeyalgorithm, attestationobject }
 -- |
--- |
--- | * `authenticatorattachment` (Optional): `AuthenticatorAttachment` -
--- | The authenticator attachment modality
--- | * `requireresidentkey` (Optional): `Boolean` -
--- | Whether the authenticator must create a client-side-resident public key credential source
--- | * `residentkey` (Optional): `ResidentKeyRequirement` -
--- | The resident key requirement
--- | * `userverification` (Optional): `UserVerificationRequirement` -
--- | A requirement for user verification for the operation
+-- | * `authenticatorattachment` (Optional): `Maybe AuthenticatorAttachment` - The authenticator attachment modality
+-- | * `requireresidentkey` (Optional): `Maybe Boolean` - Whether the authenticator must create a client-side-resident public key credential source
+-- | * `residentkey` (Optional): `Maybe ResidentKeyRequirement` - The resident key requirement
+-- | * `userverification` (Optional): `Maybe UserVerificationRequirement` - A requirement for user verification for the operation
 type AuthenticatorSelection =
-  {authenticatorattachment :: Maybe (AuthenticatorAttachment) --
--- | The authenticator attachment modality
-  , requireresidentkey :: Maybe (Boolean) --
--- | Whether the authenticator must create a client-side-resident public key credential source
-  , residentkey :: Maybe (ResidentKeyRequirement) --
--- | The resident key requirement
-  , userverification :: Maybe (UserVerificationRequirement) --
--- | A requirement for user verification for the operation
+  { authenticatorattachment :: Maybe AuthenticatorAttachment -- The authenticator attachment modality
+  , requireresidentkey :: Maybe Boolean -- Whether the authenticator must create a client-side-resident public key credential source
+  , residentkey :: Maybe ResidentKeyRequirement -- The resident key requirement
+  , userverification :: Maybe UserVerificationRequirement -- A requirement for user verification for the operation
   }
 
--- JSON instances for AuthenticatorSelection
-instance encodeJsonAuthenticatorSelection :: EncodeJson AuthenticatorSelection where
-  encodeJson record =
-    "authenticatorattachment" := record.authenticatorattachment
-
-    ~> "requireresidentkey" := record.requireresidentkey
-
-    ~> "residentkey" := record.residentkey
-
-    ~> "userverification" := record.userverification
-    ~> jsonEmptyObject
-
-instance decodeJsonAuthenticatorSelection :: DecodeJson AuthenticatorSelection where
-  decodeJson json = do
-    obj <- decodeJson json
-    authenticatorattachment <- obj .:? "authenticatorattachment"
-    requireresidentkey <- obj .:? "requireresidentkey"
-    residentkey <- obj .:? "residentkey"
-    userverification <- obj .:? "userverification"
-    pure { authenticatorattachment, requireresidentkey, residentkey, userverification }
+authenticatorselectionCodec :: CJ.Codec AuthenticatorSelection
+authenticatorselectionCodec =
+  CJ.object $ CJR.record
+    { authenticatorattachment: CJR.optional authenticatorattachmentCodec
+    , requireresidentkey: CJR.optional CJ.boolean
+    , residentkey: CJR.optional residentkeyrequirementCodec
+    , userverification: CJR.optional userverificationrequirementCodec
+    }
 
 -- | The authenticator transports that can be used
 data AuthenticatorTransport
@@ -282,22 +189,22 @@ instance showAuthenticatorTransport :: Show AuthenticatorTransport where
 authenticatortransportCodec :: CJ.Codec AuthenticatorTransport
 authenticatortransportCodec = CJ.prismaticCodec "AuthenticatorTransport" dec enc CJ.string
   where
-    dec = case _ of
-      "Usb" -> Just AuthenticatorTransport_Usb
-      "Nfc" -> Just AuthenticatorTransport_Nfc
-      "Ble" -> Just AuthenticatorTransport_Ble
-      "SmartCard" -> Just AuthenticatorTransport_SmartCard
-      "Hybrid" -> Just AuthenticatorTransport_Hybrid
-      "Internal" -> Just AuthenticatorTransport_Internal
-      _ -> Nothing
+  dec = case _ of
+    "Usb" -> Just AuthenticatorTransport_Usb
+    "Nfc" -> Just AuthenticatorTransport_Nfc
+    "Ble" -> Just AuthenticatorTransport_Ble
+    "SmartCard" -> Just AuthenticatorTransport_SmartCard
+    "Hybrid" -> Just AuthenticatorTransport_Hybrid
+    "Internal" -> Just AuthenticatorTransport_Internal
+    _ -> Nothing
 
-    enc = case _ of
-      AuthenticatorTransport_Usb -> "Usb"
-      AuthenticatorTransport_Nfc -> "Nfc"
-      AuthenticatorTransport_Ble -> "Ble"
-      AuthenticatorTransport_SmartCard -> "SmartCard"
-      AuthenticatorTransport_Hybrid -> "Hybrid"
-      AuthenticatorTransport_Internal -> "Internal"
+  enc = case _ of
+    AuthenticatorTransport_Usb -> "Usb"
+    AuthenticatorTransport_Nfc -> "Nfc"
+    AuthenticatorTransport_Ble -> "Ble"
+    AuthenticatorTransport_SmartCard -> "SmartCard"
+    AuthenticatorTransport_Hybrid -> "Hybrid"
+    AuthenticatorTransport_Internal -> "Internal"
 
 -- | The attestation conveyance preference
 data ConveyancePreference
@@ -316,243 +223,133 @@ instance showConveyancePreference :: Show ConveyancePreference where
 conveyancepreferenceCodec :: CJ.Codec ConveyancePreference
 conveyancepreferenceCodec = CJ.prismaticCodec "ConveyancePreference" dec enc CJ.string
   where
-    dec = case _ of
-      "None" -> Just ConveyancePreference_None
-      "Indirect" -> Just ConveyancePreference_Indirect
-      "Direct" -> Just ConveyancePreference_Direct
-      "Enterprise" -> Just ConveyancePreference_Enterprise
-      _ -> Nothing
+  dec = case _ of
+    "None" -> Just ConveyancePreference_None
+    "Indirect" -> Just ConveyancePreference_Indirect
+    "Direct" -> Just ConveyancePreference_Direct
+    "Enterprise" -> Just ConveyancePreference_Enterprise
+    _ -> Nothing
 
-    enc = case _ of
-      ConveyancePreference_None -> "None"
-      ConveyancePreference_Indirect -> "Indirect"
-      ConveyancePreference_Direct -> "Direct"
-      ConveyancePreference_Enterprise -> "Enterprise"
+  enc = case _ of
+    ConveyancePreference_None -> "None"
+    ConveyancePreference_Indirect -> "Indirect"
+    ConveyancePreference_Direct -> "Direct"
+    ConveyancePreference_Enterprise -> "Enterprise"
+
 -- |
--- |
--- | * `expiresat`: `String` -
--- | Expiration date of the PAT
--- | Format: date-time
--- | * `metadata` (Optional): `Object` -
--- | Example: `{"name":"my-pat","used-by":"my-app-cli"}`
+-- | * `expiresat`: `String` - Expiration date of the PAT
+-- | * `metadata` (Optional): `Maybe J.JObject`
 type CreatePATRequest =
-  {expiresat :: String --
--- | Expiration date of the PAT
--- | Format: date-time
-  , metadata :: Maybe (Object) --
--- | Example: `{"name":"my-pat","used-by":"my-app-cli"}`
+  { expiresat :: String -- Expiration date of the PAT
+  , metadata :: Maybe J.JObject
   }
 
--- JSON instances for CreatePATRequest
-instance encodeJsonCreatePATRequest :: EncodeJson CreatePATRequest where
-  encodeJson record =
-    "expiresat" := record.expiresat
+createpatrequestCodec :: CJ.Codec CreatePATRequest
+createpatrequestCodec =
+  CJ.object $ CJR.record
+    { expiresat: CJ.identity CJ.string
+    , metadata: CJR.optional CJ.jobject
+    }
 
-    ~> "metadata" := record.metadata
-    ~> jsonEmptyObject
-
-instance decodeJsonCreatePATRequest :: DecodeJson CreatePATRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    expiresat <- obj .: "expiresat"
-    metadata <- obj .:? "metadata"
-    pure { expiresat, metadata }
 -- |
--- |
--- | * `id`: `String` -
--- | ID of the PAT
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
--- | * `personalaccesstoken`: `String` -
--- | PAT
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
+-- | * `id`: `String` - ID of the PAT
+-- | * `personalaccesstoken`: `String` - PAT
 type CreatePATResponse =
-  {id :: String --
--- | ID of the PAT
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
-  , personalaccesstoken :: String --
--- | PAT
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
+  { id :: String -- ID of the PAT
+  , personalaccesstoken :: String -- PAT
   }
 
--- JSON instances for CreatePATResponse
-instance encodeJsonCreatePATResponse :: EncodeJson CreatePATResponse where
-  encodeJson record =
-    "id" := record.id
+createpatresponseCodec :: CJ.Codec CreatePATResponse
+createpatresponseCodec =
+  CJ.object $ CJR.record
+    { id: CJ.identity CJ.string
+    , personalaccesstoken: CJ.identity CJ.string
+    }
 
-    ~> "personalaccesstoken" := record.personalaccesstoken
-    ~> jsonEmptyObject
-
-instance decodeJsonCreatePATResponse :: DecodeJson CreatePATResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    id <- obj .: "id"
-    personalaccesstoken <- obj .: "personalaccesstoken"
-    pure { id, personalaccesstoken }
 -- |
--- |
--- | * `id`: `String` -
--- | The credential's identifier
--- | * `type_`: `String` -
--- | The credential type represented by this object
--- | * `rawid`: `String` -
--- | Base64url-encoded binary data
--- | Format: byte
--- | * `clientextensionresults` (Optional): `AuthenticationExtensionsClientOutputs` -
--- | Map of extension outputs from the client
--- | * `authenticatorattachment` (Optional): `String` -
--- | The authenticator attachment
--- | * `response`: `AuthenticatorAssertionResponse` -
+-- | * `id`: `String` - The credential's identifier
+-- | * `type_`: `String` - The credential type represented by this object
+-- | * `rawid`: `String` - Base64url-encoded binary data
+-- | * `clientextensionresults` (Optional): `Maybe AuthenticationExtensionsClientOutputs` - Map of extension outputs from the client
+-- | * `authenticatorattachment` (Optional): `Maybe String` - The authenticator attachment
+-- | * `response`: `AuthenticatorAssertionResponse`
 type CredentialAssertionResponse =
-  {id :: String --
--- | The credential's identifier
-  , type_ :: String --
--- | The credential type represented by this object
-  , rawid :: String --
--- | Base64url-encoded binary data
--- | Format: byte
-  , clientextensionresults :: Maybe (AuthenticationExtensionsClientOutputs) --
--- | Map of extension outputs from the client
-  , authenticatorattachment :: Maybe (String) --
--- | The authenticator attachment
-  , response :: AuthenticatorAssertionResponse --
+  { id :: String -- The credential's identifier
+  , type_ :: String -- The credential type represented by this object
+  , rawid :: String -- Base64url-encoded binary data
+  , clientextensionresults :: Maybe AuthenticationExtensionsClientOutputs -- Map of extension outputs from the client
+  , authenticatorattachment :: Maybe String -- The authenticator attachment
+  , response :: AuthenticatorAssertionResponse
   }
 
--- JSON instances for CredentialAssertionResponse
-instance encodeJsonCredentialAssertionResponse :: EncodeJson CredentialAssertionResponse where
-  encodeJson record =
-    "id" := record.id
+credentialassertionresponseCodec :: CJ.Codec CredentialAssertionResponse
+credentialassertionresponseCodec =
+  CJ.object $ CJR.record
+    { id: CJ.identity CJ.string
+    , type_: CJ.identity CJ.string
+    , rawid: CJ.identity CJ.string
+    , clientextensionresults: CJR.optional authenticationextensionsclientoutputsCodec
+    , authenticatorattachment: CJR.optional CJ.string
+    , response: CJ.identity authenticatorassertionresponseCodec
+    }
 
-    ~> "type_" := record.type_
-
-    ~> "rawid" := record.rawid
-
-    ~> "clientextensionresults" := record.clientextensionresults
-
-    ~> "authenticatorattachment" := record.authenticatorattachment
-
-    ~> "response" := record.response
-    ~> jsonEmptyObject
-
-instance decodeJsonCredentialAssertionResponse :: DecodeJson CredentialAssertionResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    id <- obj .: "id"
-    type_ <- obj .: "type_"
-    rawid <- obj .: "rawid"
-    clientextensionresults <- obj .:? "clientextensionresults"
-    authenticatorattachment <- obj .:? "authenticatorattachment"
-    response <- obj .: "response"
-    pure { id, type_, rawid, clientextensionresults, authenticatorattachment, response }
 -- |
--- |
--- | * `id`: `String` -
--- | The credential's identifier
--- | * `type_`: `String` -
--- | The credential type represented by this object
--- | * `rawid`: `String` -
--- | Base64url-encoded binary data
--- | Format: byte
--- | * `clientextensionresults` (Optional): `AuthenticationExtensionsClientOutputs` -
--- | Map of extension outputs from the client
--- | * `authenticatorattachment` (Optional): `String` -
--- | The authenticator attachment
--- | * `response`: `AuthenticatorAttestationResponse` -
+-- | * `id`: `String` - The credential's identifier
+-- | * `type_`: `String` - The credential type represented by this object
+-- | * `rawid`: `String` - Base64url-encoded binary data
+-- | * `clientextensionresults` (Optional): `Maybe AuthenticationExtensionsClientOutputs` - Map of extension outputs from the client
+-- | * `authenticatorattachment` (Optional): `Maybe String` - The authenticator attachment
+-- | * `response`: `AuthenticatorAttestationResponse`
 type CredentialCreationResponse =
-  {id :: String --
--- | The credential's identifier
-  , type_ :: String --
--- | The credential type represented by this object
-  , rawid :: String --
--- | Base64url-encoded binary data
--- | Format: byte
-  , clientextensionresults :: Maybe (AuthenticationExtensionsClientOutputs) --
--- | Map of extension outputs from the client
-  , authenticatorattachment :: Maybe (String) --
--- | The authenticator attachment
-  , response :: AuthenticatorAttestationResponse --
+  { id :: String -- The credential's identifier
+  , type_ :: String -- The credential type represented by this object
+  , rawid :: String -- Base64url-encoded binary data
+  , clientextensionresults :: Maybe AuthenticationExtensionsClientOutputs -- Map of extension outputs from the client
+  , authenticatorattachment :: Maybe String -- The authenticator attachment
+  , response :: AuthenticatorAttestationResponse
   }
 
--- JSON instances for CredentialCreationResponse
-instance encodeJsonCredentialCreationResponse :: EncodeJson CredentialCreationResponse where
-  encodeJson record =
-    "id" := record.id
+credentialcreationresponseCodec :: CJ.Codec CredentialCreationResponse
+credentialcreationresponseCodec =
+  CJ.object $ CJR.record
+    { id: CJ.identity CJ.string
+    , type_: CJ.identity CJ.string
+    , rawid: CJ.identity CJ.string
+    , clientextensionresults: CJR.optional authenticationextensionsclientoutputsCodec
+    , authenticatorattachment: CJR.optional CJ.string
+    , response: CJ.identity authenticatorattestationresponseCodec
+    }
 
-    ~> "type_" := record.type_
-
-    ~> "rawid" := record.rawid
-
-    ~> "clientextensionresults" := record.clientextensionresults
-
-    ~> "authenticatorattachment" := record.authenticatorattachment
-
-    ~> "response" := record.response
-    ~> jsonEmptyObject
-
-instance decodeJsonCredentialCreationResponse :: DecodeJson CredentialCreationResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    id <- obj .: "id"
-    type_ <- obj .: "type_"
-    rawid <- obj .: "rawid"
-    clientextensionresults <- obj .:? "clientextensionresults"
-    authenticatorattachment <- obj .:? "authenticatorattachment"
-    response <- obj .: "response"
-    pure { id, type_, rawid, clientextensionresults, authenticatorattachment, response }
 -- |
--- |
--- | * `type_`: `CredentialType` -
--- | The valid credential types
--- | * `alg`: `Int` -
--- | The cryptographic algorithm identifier
+-- | * `type_`: `CredentialType` - The valid credential types
+-- | * `alg`: `Int` - The cryptographic algorithm identifier
 type CredentialParameter =
-  {type_ :: CredentialType --
--- | The valid credential types
-  , alg :: Int --
--- | The cryptographic algorithm identifier
+  { type_ :: CredentialType -- The valid credential types
+  , alg :: Int -- The cryptographic algorithm identifier
   }
 
--- JSON instances for CredentialParameter
-instance encodeJsonCredentialParameter :: EncodeJson CredentialParameter where
-  encodeJson record =
-    "type_" := record.type_
+credentialparameterCodec :: CJ.Codec CredentialParameter
+credentialparameterCodec =
+  CJ.object $ CJR.record
+    { type_: CJ.identity credentialtypeCodec
+    , alg: CJ.identity CJ.int
+    }
 
-    ~> "alg" := record.alg
-    ~> jsonEmptyObject
-
-instance decodeJsonCredentialParameter :: DecodeJson CredentialParameter where
-  decodeJson json = do
-    obj <- decodeJson json
-    type_ <- obj .: "type_"
-    alg <- obj .: "alg"
-    pure { type_, alg }
 -- | Credential properties extension output
 -- |
--- | * `rk` (Optional): `Boolean` -
--- | Indicates if the credential is a resident key
+-- | * `rk` (Optional): `Maybe Boolean` - Indicates if the credential is a resident key
 type CredentialPropertiesOutput =
-  {rk :: Maybe (Boolean) --
--- | Indicates if the credential is a resident key
+  { rk :: Maybe Boolean -- Indicates if the credential is a resident key
   }
 
--- JSON instances for CredentialPropertiesOutput
-instance encodeJsonCredentialPropertiesOutput :: EncodeJson CredentialPropertiesOutput where
-  encodeJson record =
-    "rk" := record.rk
-    ~> jsonEmptyObject
-
-instance decodeJsonCredentialPropertiesOutput :: DecodeJson CredentialPropertiesOutput where
-  decodeJson json = do
-    obj <- decodeJson json
-    rk <- obj .:? "rk"
-    pure { rk }
+credentialpropertiesoutputCodec :: CJ.Codec CredentialPropertiesOutput
+credentialpropertiesoutputCodec =
+  CJ.object $ CJR.record
+    { rk: CJR.optional CJ.boolean
+    }
 
 -- | The valid credential types
-data CredentialType
-  = CredentialType_PublicKey
+data CredentialType = CredentialType_PublicKey
 
 derive instance genericCredentialType :: Generic CredentialType _
 derive instance eqCredentialType :: Eq CredentialType
@@ -564,12 +361,12 @@ instance showCredentialType :: Show CredentialType where
 credentialtypeCodec :: CJ.Codec CredentialType
 credentialtypeCodec = CJ.prismaticCodec "CredentialType" dec enc CJ.string
   where
-    dec = case _ of
-      "PublicKey" -> Just CredentialType_PublicKey
-      _ -> Nothing
+  dec = case _ of
+    "PublicKey" -> Just CredentialType_PublicKey
+    _ -> Nothing
 
-    enc = case _ of
-      CredentialType_PublicKey -> "PublicKey"
+  enc = case _ of
+    CredentialType_PublicKey -> "PublicKey"
 
 -- | Error code identifying the specific application error
 data ErrorResponseError
@@ -615,110 +412,91 @@ instance showErrorResponseError :: Show ErrorResponseError where
 errorresponseerrorCodec :: CJ.Codec ErrorResponseError
 errorresponseerrorCodec = CJ.prismaticCodec "ErrorResponseError" dec enc CJ.string
   where
-    dec = case _ of
-      "DefaultRoleMustBeInAllowedRoles" -> Just ErrorResponseError_DefaultRoleMustBeInAllowedRoles
-      "DisabledEndpoint" -> Just ErrorResponseError_DisabledEndpoint
-      "DisabledUser" -> Just ErrorResponseError_DisabledUser
-      "EmailAlreadyInUse" -> Just ErrorResponseError_EmailAlreadyInUse
-      "EmailAlreadyVerified" -> Just ErrorResponseError_EmailAlreadyVerified
-      "ForbiddenAnonymous" -> Just ErrorResponseError_ForbiddenAnonymous
-      "InternalServerError" -> Just ErrorResponseError_InternalServerError
-      "InvalidEmailPassword" -> Just ErrorResponseError_InvalidEmailPassword
-      "InvalidRequest" -> Just ErrorResponseError_InvalidRequest
-      "LocaleNotAllowed" -> Just ErrorResponseError_LocaleNotAllowed
-      "PasswordTooShort" -> Just ErrorResponseError_PasswordTooShort
-      "PasswordInHibpDatabase" -> Just ErrorResponseError_PasswordInHibpDatabase
-      "RedirectToNotAllowed" -> Just ErrorResponseError_RedirectToNotAllowed
-      "RoleNotAllowed" -> Just ErrorResponseError_RoleNotAllowed
-      "SignupDisabled" -> Just ErrorResponseError_SignupDisabled
-      "UnverifiedUser" -> Just ErrorResponseError_UnverifiedUser
-      "UserNotAnonymous" -> Just ErrorResponseError_UserNotAnonymous
-      "InvalidPat" -> Just ErrorResponseError_InvalidPat
-      "InvalidRefreshToken" -> Just ErrorResponseError_InvalidRefreshToken
-      "InvalidTicket" -> Just ErrorResponseError_InvalidTicket
-      "DisabledMfaTotp" -> Just ErrorResponseError_DisabledMfaTotp
-      "NoTotpSecret" -> Just ErrorResponseError_NoTotpSecret
-      "InvalidTotp" -> Just ErrorResponseError_InvalidTotp
-      "MfaTypeNotFound" -> Just ErrorResponseError_MfaTypeNotFound
-      "TotpAlreadyActive" -> Just ErrorResponseError_TotpAlreadyActive
-      "InvalidState" -> Just ErrorResponseError_InvalidState
-      "OauthTokenEchangeFailed" -> Just ErrorResponseError_OauthTokenEchangeFailed
-      "OauthProfileFetchFailed" -> Just ErrorResponseError_OauthProfileFetchFailed
-      "OauthProviderError" -> Just ErrorResponseError_OauthProviderError
-      "InvalidOtp" -> Just ErrorResponseError_InvalidOtp
-      "CannotSendSms" -> Just ErrorResponseError_CannotSendSms
-      _ -> Nothing
+  dec = case _ of
+    "DefaultRoleMustBeInAllowedRoles" -> Just ErrorResponseError_DefaultRoleMustBeInAllowedRoles
+    "DisabledEndpoint" -> Just ErrorResponseError_DisabledEndpoint
+    "DisabledUser" -> Just ErrorResponseError_DisabledUser
+    "EmailAlreadyInUse" -> Just ErrorResponseError_EmailAlreadyInUse
+    "EmailAlreadyVerified" -> Just ErrorResponseError_EmailAlreadyVerified
+    "ForbiddenAnonymous" -> Just ErrorResponseError_ForbiddenAnonymous
+    "InternalServerError" -> Just ErrorResponseError_InternalServerError
+    "InvalidEmailPassword" -> Just ErrorResponseError_InvalidEmailPassword
+    "InvalidRequest" -> Just ErrorResponseError_InvalidRequest
+    "LocaleNotAllowed" -> Just ErrorResponseError_LocaleNotAllowed
+    "PasswordTooShort" -> Just ErrorResponseError_PasswordTooShort
+    "PasswordInHibpDatabase" -> Just ErrorResponseError_PasswordInHibpDatabase
+    "RedirectToNotAllowed" -> Just ErrorResponseError_RedirectToNotAllowed
+    "RoleNotAllowed" -> Just ErrorResponseError_RoleNotAllowed
+    "SignupDisabled" -> Just ErrorResponseError_SignupDisabled
+    "UnverifiedUser" -> Just ErrorResponseError_UnverifiedUser
+    "UserNotAnonymous" -> Just ErrorResponseError_UserNotAnonymous
+    "InvalidPat" -> Just ErrorResponseError_InvalidPat
+    "InvalidRefreshToken" -> Just ErrorResponseError_InvalidRefreshToken
+    "InvalidTicket" -> Just ErrorResponseError_InvalidTicket
+    "DisabledMfaTotp" -> Just ErrorResponseError_DisabledMfaTotp
+    "NoTotpSecret" -> Just ErrorResponseError_NoTotpSecret
+    "InvalidTotp" -> Just ErrorResponseError_InvalidTotp
+    "MfaTypeNotFound" -> Just ErrorResponseError_MfaTypeNotFound
+    "TotpAlreadyActive" -> Just ErrorResponseError_TotpAlreadyActive
+    "InvalidState" -> Just ErrorResponseError_InvalidState
+    "OauthTokenEchangeFailed" -> Just ErrorResponseError_OauthTokenEchangeFailed
+    "OauthProfileFetchFailed" -> Just ErrorResponseError_OauthProfileFetchFailed
+    "OauthProviderError" -> Just ErrorResponseError_OauthProviderError
+    "InvalidOtp" -> Just ErrorResponseError_InvalidOtp
+    "CannotSendSms" -> Just ErrorResponseError_CannotSendSms
+    _ -> Nothing
 
-    enc = case _ of
-      ErrorResponseError_DefaultRoleMustBeInAllowedRoles -> "DefaultRoleMustBeInAllowedRoles"
-      ErrorResponseError_DisabledEndpoint -> "DisabledEndpoint"
-      ErrorResponseError_DisabledUser -> "DisabledUser"
-      ErrorResponseError_EmailAlreadyInUse -> "EmailAlreadyInUse"
-      ErrorResponseError_EmailAlreadyVerified -> "EmailAlreadyVerified"
-      ErrorResponseError_ForbiddenAnonymous -> "ForbiddenAnonymous"
-      ErrorResponseError_InternalServerError -> "InternalServerError"
-      ErrorResponseError_InvalidEmailPassword -> "InvalidEmailPassword"
-      ErrorResponseError_InvalidRequest -> "InvalidRequest"
-      ErrorResponseError_LocaleNotAllowed -> "LocaleNotAllowed"
-      ErrorResponseError_PasswordTooShort -> "PasswordTooShort"
-      ErrorResponseError_PasswordInHibpDatabase -> "PasswordInHibpDatabase"
-      ErrorResponseError_RedirectToNotAllowed -> "RedirectToNotAllowed"
-      ErrorResponseError_RoleNotAllowed -> "RoleNotAllowed"
-      ErrorResponseError_SignupDisabled -> "SignupDisabled"
-      ErrorResponseError_UnverifiedUser -> "UnverifiedUser"
-      ErrorResponseError_UserNotAnonymous -> "UserNotAnonymous"
-      ErrorResponseError_InvalidPat -> "InvalidPat"
-      ErrorResponseError_InvalidRefreshToken -> "InvalidRefreshToken"
-      ErrorResponseError_InvalidTicket -> "InvalidTicket"
-      ErrorResponseError_DisabledMfaTotp -> "DisabledMfaTotp"
-      ErrorResponseError_NoTotpSecret -> "NoTotpSecret"
-      ErrorResponseError_InvalidTotp -> "InvalidTotp"
-      ErrorResponseError_MfaTypeNotFound -> "MfaTypeNotFound"
-      ErrorResponseError_TotpAlreadyActive -> "TotpAlreadyActive"
-      ErrorResponseError_InvalidState -> "InvalidState"
-      ErrorResponseError_OauthTokenEchangeFailed -> "OauthTokenEchangeFailed"
-      ErrorResponseError_OauthProfileFetchFailed -> "OauthProfileFetchFailed"
-      ErrorResponseError_OauthProviderError -> "OauthProviderError"
-      ErrorResponseError_InvalidOtp -> "InvalidOtp"
-      ErrorResponseError_CannotSendSms -> "CannotSendSms"
+  enc = case _ of
+    ErrorResponseError_DefaultRoleMustBeInAllowedRoles -> "DefaultRoleMustBeInAllowedRoles"
+    ErrorResponseError_DisabledEndpoint -> "DisabledEndpoint"
+    ErrorResponseError_DisabledUser -> "DisabledUser"
+    ErrorResponseError_EmailAlreadyInUse -> "EmailAlreadyInUse"
+    ErrorResponseError_EmailAlreadyVerified -> "EmailAlreadyVerified"
+    ErrorResponseError_ForbiddenAnonymous -> "ForbiddenAnonymous"
+    ErrorResponseError_InternalServerError -> "InternalServerError"
+    ErrorResponseError_InvalidEmailPassword -> "InvalidEmailPassword"
+    ErrorResponseError_InvalidRequest -> "InvalidRequest"
+    ErrorResponseError_LocaleNotAllowed -> "LocaleNotAllowed"
+    ErrorResponseError_PasswordTooShort -> "PasswordTooShort"
+    ErrorResponseError_PasswordInHibpDatabase -> "PasswordInHibpDatabase"
+    ErrorResponseError_RedirectToNotAllowed -> "RedirectToNotAllowed"
+    ErrorResponseError_RoleNotAllowed -> "RoleNotAllowed"
+    ErrorResponseError_SignupDisabled -> "SignupDisabled"
+    ErrorResponseError_UnverifiedUser -> "UnverifiedUser"
+    ErrorResponseError_UserNotAnonymous -> "UserNotAnonymous"
+    ErrorResponseError_InvalidPat -> "InvalidPat"
+    ErrorResponseError_InvalidRefreshToken -> "InvalidRefreshToken"
+    ErrorResponseError_InvalidTicket -> "InvalidTicket"
+    ErrorResponseError_DisabledMfaTotp -> "DisabledMfaTotp"
+    ErrorResponseError_NoTotpSecret -> "NoTotpSecret"
+    ErrorResponseError_InvalidTotp -> "InvalidTotp"
+    ErrorResponseError_MfaTypeNotFound -> "MfaTypeNotFound"
+    ErrorResponseError_TotpAlreadyActive -> "TotpAlreadyActive"
+    ErrorResponseError_InvalidState -> "InvalidState"
+    ErrorResponseError_OauthTokenEchangeFailed -> "OauthTokenEchangeFailed"
+    ErrorResponseError_OauthProfileFetchFailed -> "OauthProfileFetchFailed"
+    ErrorResponseError_OauthProviderError -> "OauthProviderError"
+    ErrorResponseError_InvalidOtp -> "InvalidOtp"
+    ErrorResponseError_CannotSendSms -> "CannotSendSms"
+
 -- | Standardized error response
 -- |
--- | * `status`: `Int` -
--- | HTTP status error code
--- | Example: `400`
--- | * `message`: `String` -
--- | Human-friendly error message
--- | Example: `"Invalid email format"`
--- | * `error`: `ErrorResponseError` -
--- | Error code identifying the specific application error
+-- | * `status`: `Int` - HTTP status error code
+-- | * `message`: `String` - Human-friendly error message
+-- | * `error`: `ErrorResponseError` - Error code identifying the specific application error
 type ErrorResponse =
-  {status :: Int --
--- | HTTP status error code
--- | Example: `400`
-  , message :: String --
--- | Human-friendly error message
--- | Example: `"Invalid email format"`
-  , error :: ErrorResponseError --
--- | Error code identifying the specific application error
+  { status :: Int -- HTTP status error code
+  , message :: String -- Human-friendly error message
+  , error :: ErrorResponseError -- Error code identifying the specific application error
   }
 
--- JSON instances for ErrorResponse
-instance encodeJsonErrorResponse :: EncodeJson ErrorResponse where
-  encodeJson record =
-    "status" := record.status
-
-    ~> "message" := record.message
-
-    ~> "error" := record.error
-    ~> jsonEmptyObject
-
-instance decodeJsonErrorResponse :: DecodeJson ErrorResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    status <- obj .: "status"
-    message <- obj .: "message"
-    error <- obj .: "error"
-    pure { status, message, error }
+errorresponseCodec :: CJ.Codec ErrorResponse
+errorresponseCodec =
+  CJ.object $ CJR.record
+    { status: CJ.identity CJ.int
+    , message: CJ.identity CJ.string
+    , error: CJ.identity errorresponseerrorCodec
+    }
 
 data IdTokenProvider
   = IdTokenProvider_Apple
@@ -734,158 +512,88 @@ instance showIdTokenProvider :: Show IdTokenProvider where
 idtokenproviderCodec :: CJ.Codec IdTokenProvider
 idtokenproviderCodec = CJ.prismaticCodec "IdTokenProvider" dec enc CJ.string
   where
-    dec = case _ of
-      "Apple" -> Just IdTokenProvider_Apple
-      "Google" -> Just IdTokenProvider_Google
-      _ -> Nothing
+  dec = case _ of
+    "Apple" -> Just IdTokenProvider_Apple
+    "Google" -> Just IdTokenProvider_Google
+    _ -> Nothing
 
-    enc = case _ of
-      IdTokenProvider_Apple -> "Apple"
-      IdTokenProvider_Google -> "Google"
+  enc = case _ of
+    IdTokenProvider_Apple -> "Apple"
+    IdTokenProvider_Google -> "Google"
+
 -- | JSON Web Key for JWT verification
 -- |
--- | * `alg`: `String` -
--- | Algorithm used with this key
--- | Example: `"RS256"`
--- | * `e`: `String` -
--- | RSA public exponent
--- | Example: `"AQAB"`
--- | * `kid`: `String` -
--- | Key ID
--- | Example: `"key-id-1"`
--- | * `kty`: `String` -
--- | Key type
--- | Example: `"RSA"`
--- | * `n`: `String` -
--- | RSA modulus
--- | Example: `"abcd1234..."`
--- | * `use`: `String` -
--- | Key usage
--- | Example: `"sig"`
+-- | * `alg`: `String` - Algorithm used with this key
+-- | * `e`: `String` - RSA public exponent
+-- | * `kid`: `String` - Key ID
+-- | * `kty`: `String` - Key type
+-- | * `n`: `String` - RSA modulus
+-- | * `use`: `String` - Key usage
 type JWK =
-  {alg :: String --
--- | Algorithm used with this key
--- | Example: `"RS256"`
-  , e :: String --
--- | RSA public exponent
--- | Example: `"AQAB"`
-  , kid :: String --
--- | Key ID
--- | Example: `"key-id-1"`
-  , kty :: String --
--- | Key type
--- | Example: `"RSA"`
-  , n :: String --
--- | RSA modulus
--- | Example: `"abcd1234..."`
-  , use :: String --
--- | Key usage
--- | Example: `"sig"`
+  { alg :: String -- Algorithm used with this key
+  , e :: String -- RSA public exponent
+  , kid :: String -- Key ID
+  , kty :: String -- Key type
+  , n :: String -- RSA modulus
+  , use :: String -- Key usage
   }
 
--- JSON instances for JWK
-instance encodeJsonJWK :: EncodeJson JWK where
-  encodeJson record =
-    "alg" := record.alg
+jwkCodec :: CJ.Codec JWK
+jwkCodec =
+  CJ.object $ CJR.record
+    { alg: CJ.identity CJ.string
+    , e: CJ.identity CJ.string
+    , kid: CJ.identity CJ.string
+    , kty: CJ.identity CJ.string
+    , n: CJ.identity CJ.string
+    , use: CJ.identity CJ.string
+    }
 
-    ~> "e" := record.e
-
-    ~> "kid" := record.kid
-
-    ~> "kty" := record.kty
-
-    ~> "n" := record.n
-
-    ~> "use" := record.use
-    ~> jsonEmptyObject
-
-instance decodeJsonJWK :: DecodeJson JWK where
-  decodeJson json = do
-    obj <- decodeJson json
-    alg <- obj .: "alg"
-    e <- obj .: "e"
-    kid <- obj .: "kid"
-    kty <- obj .: "kty"
-    n <- obj .: "n"
-    use <- obj .: "use"
-    pure { alg, e, kid, kty, n, use }
 -- | JSON Web Key Set for verifying JWT signatures
 -- |
--- | * `keys`: `Array JWK` -
--- | Array of public keys
+-- | * `keys`: `Array JWK` - Array of public keys
 type JWKSet =
-  {keys :: Array JWK --
--- | Array of public keys
+  { keys :: Array JWK -- Array of public keys
   }
 
--- JSON instances for JWKSet
-instance encodeJsonJWKSet :: EncodeJson JWKSet where
-  encodeJson record =
-    "keys" := record.keys
-    ~> jsonEmptyObject
+jwksetCodec :: CJ.Codec JWKSet
+jwksetCodec =
+  CJ.object $ CJR.record
+    { keys: CJ.identity CJ.array jwkCodec
+    }
 
-instance decodeJsonJWKSet :: DecodeJson JWKSet where
-  decodeJson json = do
-    obj <- decodeJson json
-    keys <- obj .: "keys"
-    pure { keys }
 -- |
--- |
--- | * `provider`: `IdTokenProvider` -
--- | * `idtoken`: `String` -
--- | Apple ID token
--- | * `nonce` (Optional): `String` -
--- | Nonce used during sign in process
+-- | * `provider`: `IdTokenProvider`
+-- | * `idtoken`: `String` - Apple ID token
+-- | * `nonce` (Optional): `Maybe String` - Nonce used during sign in process
 type LinkIdTokenRequest =
-  {provider :: IdTokenProvider --
-  , idtoken :: String --
--- | Apple ID token
-  , nonce :: Maybe (String) --
--- | Nonce used during sign in process
+  { provider :: IdTokenProvider
+  , idtoken :: String -- Apple ID token
+  , nonce :: Maybe String -- Nonce used during sign in process
   }
 
--- JSON instances for LinkIdTokenRequest
-instance encodeJsonLinkIdTokenRequest :: EncodeJson LinkIdTokenRequest where
-  encodeJson record =
-    "provider" := record.provider
+linkidtokenrequestCodec :: CJ.Codec LinkIdTokenRequest
+linkidtokenrequestCodec =
+  CJ.object $ CJR.record
+    { provider: CJ.identity idtokenproviderCodec
+    , idtoken: CJ.identity CJ.string
+    , nonce: CJR.optional CJ.string
+    }
 
-    ~> "idtoken" := record.idtoken
-
-    ~> "nonce" := record.nonce
-    ~> jsonEmptyObject
-
-instance decodeJsonLinkIdTokenRequest :: DecodeJson LinkIdTokenRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    provider <- obj .: "provider"
-    idtoken <- obj .: "idtoken"
-    nonce <- obj .:? "nonce"
-    pure { provider, idtoken, nonce }
 -- | Challenge payload for multi-factor authentication
 -- |
--- | * `ticket`: `String` -
--- | Ticket to use when completing the MFA challenge
--- | Example: `"mfaTotp:abc123def456"`
+-- | * `ticket`: `String` - Ticket to use when completing the MFA challenge
 type MFAChallengePayload =
-  {ticket :: String --
--- | Ticket to use when completing the MFA challenge
--- | Example: `"mfaTotp:abc123def456"`
+  { ticket :: String -- Ticket to use when completing the MFA challenge
   }
 
--- JSON instances for MFAChallengePayload
-instance encodeJsonMFAChallengePayload :: EncodeJson MFAChallengePayload where
-  encodeJson record =
-    "ticket" := record.ticket
-    ~> jsonEmptyObject
+mfachallengepayloadCodec :: CJ.Codec MFAChallengePayload
+mfachallengepayloadCodec =
+  CJ.object $ CJR.record
+    { ticket: CJ.identity CJ.string
+    }
 
-instance decodeJsonMFAChallengePayload :: DecodeJson MFAChallengePayload where
-  decodeJson json = do
-    obj <- decodeJson json
-    ticket <- obj .: "ticket"
-    pure { ticket }
-
-data OKResponse
-  = OKResponse_OK
+data OKResponse = OKResponse_OK
 
 derive instance genericOKResponse :: Generic OKResponse _
 derive instance eqOKResponse :: Eq OKResponse
@@ -897,156 +605,84 @@ instance showOKResponse :: Show OKResponse where
 okresponseCodec :: CJ.Codec OKResponse
 okresponseCodec = CJ.prismaticCodec "OKResponse" dec enc CJ.string
   where
-    dec = case _ of
-      "OK" -> Just OKResponse_OK
-      _ -> Nothing
+  dec = case _ of
+    "OK" -> Just OKResponse_OK
+    _ -> Nothing
 
-    enc = case _ of
-      OKResponse_OK -> "OK"
+  enc = case _ of
+    OKResponse_OK -> "OK"
+
 -- |
--- |
--- | * `redirectto` (Optional): `String` -
--- | Example: `"https://my-app.com/catch-redirection"`
--- | Format: uri
+-- | * `redirectto` (Optional): `Maybe String`
 type OptionsRedirectTo =
-  {redirectto :: Maybe (String) --
--- | Example: `"https://my-app.com/catch-redirection"`
--- | Format: uri
+  { redirectto :: Maybe String
   }
 
--- JSON instances for OptionsRedirectTo
-instance encodeJsonOptionsRedirectTo :: EncodeJson OptionsRedirectTo where
-  encodeJson record =
-    "redirectto" := record.redirectto
-    ~> jsonEmptyObject
+optionsredirecttoCodec :: CJ.Codec OptionsRedirectTo
+optionsredirecttoCodec =
+  CJ.object $ CJR.record
+    { redirectto: CJR.optional CJ.string
+    }
 
-instance decodeJsonOptionsRedirectTo :: DecodeJson OptionsRedirectTo where
-  decodeJson json = do
-    obj <- decodeJson json
-    redirectto <- obj .:? "redirectto"
-    pure { redirectto }
 -- |
--- |
--- | * `rp`: `RelyingPartyEntity` -
--- | * `user`: `UserEntity` -
--- | * `challenge`: `String` -
--- | Base64url-encoded binary data
--- | Format: byte
--- | * `pubkeycredparams`: `Array CredentialParameter` -
--- | The desired credential types and their respective cryptographic parameters
--- | * `timeout` (Optional): `Int` -
--- | A time, in milliseconds, that the caller is willing to wait for the call to complete
--- | * `excludecredentials` (Optional): `Array PublicKeyCredentialDescriptor` -
--- | A list of PublicKeyCredentialDescriptor objects representing public key credentials that are not acceptable to the caller
--- | * `authenticatorselection` (Optional): `AuthenticatorSelection` -
--- | * `hints` (Optional): `Array PublicKeyCredentialHints` -
--- | Hints to help guide the user through the experience
--- | * `attestation` (Optional): `ConveyancePreference` -
--- | The attestation conveyance preference
--- | * `attestationformats` (Optional): `Array AttestationFormat` -
--- | The preferred attestation statement formats
--- | * `extensions` (Optional): `Object` -
--- | Additional parameters requesting additional processing by the client and authenticator
+-- | * `rp`: `RelyingPartyEntity`
+-- | * `user`: `UserEntity`
+-- | * `challenge`: `String` - Base64url-encoded binary data
+-- | * `pubkeycredparams`: `Array CredentialParameter` - The desired credential types and their respective cryptographic parameters
+-- | * `timeout` (Optional): `Maybe Int` - A time, in milliseconds, that the caller is willing to wait for the call to complete
+-- | * `excludecredentials` (Optional): `Maybe (Array PublicKeyCredentialDescriptor)` - A list of PublicKeyCredentialDescriptor objects representing public key credentials that are not acceptable to the caller
+-- | * `authenticatorselection` (Optional): `Maybe AuthenticatorSelection`
+-- | * `hints` (Optional): `Maybe (Array PublicKeyCredentialHints)` - Hints to help guide the user through the experience
+-- | * `attestation` (Optional): `Maybe ConveyancePreference` - The attestation conveyance preference
+-- | * `attestationformats` (Optional): `Maybe (Array AttestationFormat)` - The preferred attestation statement formats
+-- | * `extensions` (Optional): `Maybe J.JObject` - Additional parameters requesting additional processing by the client and authenticator
 type PublicKeyCredentialCreationOptions =
-  {rp :: RelyingPartyEntity --
-  , user :: UserEntity --
-  , challenge :: String --
--- | Base64url-encoded binary data
--- | Format: byte
-  , pubkeycredparams :: Array CredentialParameter --
--- | The desired credential types and their respective cryptographic parameters
-  , timeout :: Maybe (Int) --
--- | A time, in milliseconds, that the caller is willing to wait for the call to complete
-  , excludecredentials :: Maybe (Array PublicKeyCredentialDescriptor) --
--- | A list of PublicKeyCredentialDescriptor objects representing public key credentials that are not acceptable to the caller
-  , authenticatorselection :: Maybe (AuthenticatorSelection) --
-  , hints :: Maybe (Array PublicKeyCredentialHints) --
--- | Hints to help guide the user through the experience
-  , attestation :: Maybe (ConveyancePreference) --
--- | The attestation conveyance preference
-  , attestationformats :: Maybe (Array AttestationFormat) --
--- | The preferred attestation statement formats
-  , extensions :: Maybe (Object) --
--- | Additional parameters requesting additional processing by the client and authenticator
+  { rp :: RelyingPartyEntity
+  , user :: UserEntity
+  , challenge :: String -- Base64url-encoded binary data
+  , pubkeycredparams :: Array CredentialParameter -- The desired credential types and their respective cryptographic parameters
+  , timeout :: Maybe Int -- A time, in milliseconds, that the caller is willing to wait for the call to complete
+  , excludecredentials :: Maybe (Array PublicKeyCredentialDescriptor) -- A list of PublicKeyCredentialDescriptor objects representing public key credentials that are not acceptable to the caller
+  , authenticatorselection :: Maybe AuthenticatorSelection
+  , hints :: Maybe (Array PublicKeyCredentialHints) -- Hints to help guide the user through the experience
+  , attestation :: Maybe ConveyancePreference -- The attestation conveyance preference
+  , attestationformats :: Maybe (Array AttestationFormat) -- The preferred attestation statement formats
+  , extensions :: Maybe J.JObject -- Additional parameters requesting additional processing by the client and authenticator
   }
 
--- JSON instances for PublicKeyCredentialCreationOptions
-instance encodeJsonPublicKeyCredentialCreationOptions :: EncodeJson PublicKeyCredentialCreationOptions where
-  encodeJson record =
-    "rp" := record.rp
+publickeycredentialcreationoptionsCodec :: CJ.Codec PublicKeyCredentialCreationOptions
+publickeycredentialcreationoptionsCodec =
+  CJ.object $ CJR.record
+    { rp: CJ.identity relyingpartyentityCodec
+    , user: CJ.identity userentityCodec
+    , challenge: CJ.identity CJ.string
+    , pubkeycredparams: CJ.identity CJ.array credentialparameterCodec
+    , timeout: CJR.optional CJ.int
+    , excludecredentials: CJR.optional CJ.array publickeycredentialdescriptorCodec
+    , authenticatorselection: CJR.optional authenticatorselectionCodec
+    , hints: CJR.optional CJ.array publickeycredentialhintsCodec
+    , attestation: CJR.optional conveyancepreferenceCodec
+    , attestationformats: CJR.optional CJ.array attestationformatCodec
+    , extensions: CJR.optional CJ.jobject
+    }
 
-    ~> "user" := record.user
-
-    ~> "challenge" := record.challenge
-
-    ~> "pubkeycredparams" := record.pubkeycredparams
-
-    ~> "timeout" := record.timeout
-
-    ~> "excludecredentials" := record.excludecredentials
-
-    ~> "authenticatorselection" := record.authenticatorselection
-
-    ~> "hints" := record.hints
-
-    ~> "attestation" := record.attestation
-
-    ~> "attestationformats" := record.attestationformats
-
-    ~> "extensions" := record.extensions
-    ~> jsonEmptyObject
-
-instance decodeJsonPublicKeyCredentialCreationOptions :: DecodeJson PublicKeyCredentialCreationOptions where
-  decodeJson json = do
-    obj <- decodeJson json
-    rp <- obj .: "rp"
-    user <- obj .: "user"
-    challenge <- obj .: "challenge"
-    pubkeycredparams <- obj .: "pubkeycredparams"
-    timeout <- obj .:? "timeout"
-    excludecredentials <- obj .:? "excludecredentials"
-    authenticatorselection <- obj .:? "authenticatorselection"
-    hints <- obj .:? "hints"
-    attestation <- obj .:? "attestation"
-    attestationformats <- obj .:? "attestationformats"
-    extensions <- obj .:? "extensions"
-    pure { rp, user, challenge, pubkeycredparams, timeout, excludecredentials, authenticatorselection, hints, attestation, attestationformats, extensions }
 -- |
--- |
--- | * `type_`: `CredentialType` -
--- | The valid credential types
--- | * `id`: `String` -
--- | Base64url-encoded binary data
--- | Format: byte
--- | * `transports` (Optional): `Array AuthenticatorTransport` -
--- | The authenticator transports that can be used
+-- | * `type_`: `CredentialType` - The valid credential types
+-- | * `id`: `String` - Base64url-encoded binary data
+-- | * `transports` (Optional): `Maybe (Array AuthenticatorTransport)` - The authenticator transports that can be used
 type PublicKeyCredentialDescriptor =
-  {type_ :: CredentialType --
--- | The valid credential types
-  , id :: String --
--- | Base64url-encoded binary data
--- | Format: byte
-  , transports :: Maybe (Array AuthenticatorTransport) --
--- | The authenticator transports that can be used
+  { type_ :: CredentialType -- The valid credential types
+  , id :: String -- Base64url-encoded binary data
+  , transports :: Maybe (Array AuthenticatorTransport) -- The authenticator transports that can be used
   }
 
--- JSON instances for PublicKeyCredentialDescriptor
-instance encodeJsonPublicKeyCredentialDescriptor :: EncodeJson PublicKeyCredentialDescriptor where
-  encodeJson record =
-    "type_" := record.type_
-
-    ~> "id" := record.id
-
-    ~> "transports" := record.transports
-    ~> jsonEmptyObject
-
-instance decodeJsonPublicKeyCredentialDescriptor :: DecodeJson PublicKeyCredentialDescriptor where
-  decodeJson json = do
-    obj <- decodeJson json
-    type_ <- obj .: "type_"
-    id <- obj .: "id"
-    transports <- obj .:? "transports"
-    pure { type_, id, transports }
+publickeycredentialdescriptorCodec :: CJ.Codec PublicKeyCredentialDescriptor
+publickeycredentialdescriptorCodec =
+  CJ.object $ CJR.record
+    { type_: CJ.identity credentialtypeCodec
+    , id: CJ.identity CJ.string
+    , transports: CJR.optional CJ.array authenticatortransportCodec
+    }
 
 -- | Hints to help guide the user through the experience
 data PublicKeyCredentialHints
@@ -1064,131 +700,74 @@ instance showPublicKeyCredentialHints :: Show PublicKeyCredentialHints where
 publickeycredentialhintsCodec :: CJ.Codec PublicKeyCredentialHints
 publickeycredentialhintsCodec = CJ.prismaticCodec "PublicKeyCredentialHints" dec enc CJ.string
   where
-    dec = case _ of
-      "SecurityKey" -> Just PublicKeyCredentialHints_SecurityKey
-      "ClientDevice" -> Just PublicKeyCredentialHints_ClientDevice
-      "Hybrid" -> Just PublicKeyCredentialHints_Hybrid
-      _ -> Nothing
+  dec = case _ of
+    "SecurityKey" -> Just PublicKeyCredentialHints_SecurityKey
+    "ClientDevice" -> Just PublicKeyCredentialHints_ClientDevice
+    "Hybrid" -> Just PublicKeyCredentialHints_Hybrid
+    _ -> Nothing
 
-    enc = case _ of
-      PublicKeyCredentialHints_SecurityKey -> "SecurityKey"
-      PublicKeyCredentialHints_ClientDevice -> "ClientDevice"
-      PublicKeyCredentialHints_Hybrid -> "Hybrid"
+  enc = case _ of
+    PublicKeyCredentialHints_SecurityKey -> "SecurityKey"
+    PublicKeyCredentialHints_ClientDevice -> "ClientDevice"
+    PublicKeyCredentialHints_Hybrid -> "Hybrid"
+
 -- |
--- |
--- | * `challenge`: `String` -
--- | Base64url-encoded binary data
--- | Format: byte
--- | * `timeout` (Optional): `Int` -
--- | A time, in milliseconds, that the caller is willing to wait for the call to complete
--- | * `rpid` (Optional): `String` -
--- | The RP ID the credential should be scoped to
--- | * `allowcredentials` (Optional): `Array PublicKeyCredentialDescriptor` -
--- | A list of CredentialDescriptor objects representing public key credentials acceptable to the caller
--- | * `userverification` (Optional): `UserVerificationRequirement` -
--- | A requirement for user verification for the operation
--- | * `hints` (Optional): `Array PublicKeyCredentialHints` -
--- | Hints to help guide the user through the experience
--- | * `extensions` (Optional): `Object` -
--- | Additional parameters requesting additional processing by the client and authenticator
+-- | * `challenge`: `String` - Base64url-encoded binary data
+-- | * `timeout` (Optional): `Maybe Int` - A time, in milliseconds, that the caller is willing to wait for the call to complete
+-- | * `rpid` (Optional): `Maybe String` - The RP ID the credential should be scoped to
+-- | * `allowcredentials` (Optional): `Maybe (Array PublicKeyCredentialDescriptor)` - A list of CredentialDescriptor objects representing public key credentials acceptable to the caller
+-- | * `userverification` (Optional): `Maybe UserVerificationRequirement` - A requirement for user verification for the operation
+-- | * `hints` (Optional): `Maybe (Array PublicKeyCredentialHints)` - Hints to help guide the user through the experience
+-- | * `extensions` (Optional): `Maybe J.JObject` - Additional parameters requesting additional processing by the client and authenticator
 type PublicKeyCredentialRequestOptions =
-  {challenge :: String --
--- | Base64url-encoded binary data
--- | Format: byte
-  , timeout :: Maybe (Int) --
--- | A time, in milliseconds, that the caller is willing to wait for the call to complete
-  , rpid :: Maybe (String) --
--- | The RP ID the credential should be scoped to
-  , allowcredentials :: Maybe (Array PublicKeyCredentialDescriptor) --
--- | A list of CredentialDescriptor objects representing public key credentials acceptable to the caller
-  , userverification :: Maybe (UserVerificationRequirement) --
--- | A requirement for user verification for the operation
-  , hints :: Maybe (Array PublicKeyCredentialHints) --
--- | Hints to help guide the user through the experience
-  , extensions :: Maybe (Object) --
--- | Additional parameters requesting additional processing by the client and authenticator
+  { challenge :: String -- Base64url-encoded binary data
+  , timeout :: Maybe Int -- A time, in milliseconds, that the caller is willing to wait for the call to complete
+  , rpid :: Maybe String -- The RP ID the credential should be scoped to
+  , allowcredentials :: Maybe (Array PublicKeyCredentialDescriptor) -- A list of CredentialDescriptor objects representing public key credentials acceptable to the caller
+  , userverification :: Maybe UserVerificationRequirement -- A requirement for user verification for the operation
+  , hints :: Maybe (Array PublicKeyCredentialHints) -- Hints to help guide the user through the experience
+  , extensions :: Maybe J.JObject -- Additional parameters requesting additional processing by the client and authenticator
   }
 
--- JSON instances for PublicKeyCredentialRequestOptions
-instance encodeJsonPublicKeyCredentialRequestOptions :: EncodeJson PublicKeyCredentialRequestOptions where
-  encodeJson record =
-    "challenge" := record.challenge
+publickeycredentialrequestoptionsCodec :: CJ.Codec PublicKeyCredentialRequestOptions
+publickeycredentialrequestoptionsCodec =
+  CJ.object $ CJR.record
+    { challenge: CJ.identity CJ.string
+    , timeout: CJR.optional CJ.int
+    , rpid: CJR.optional CJ.string
+    , allowcredentials: CJR.optional CJ.array publickeycredentialdescriptorCodec
+    , userverification: CJR.optional userverificationrequirementCodec
+    , hints: CJR.optional CJ.array publickeycredentialhintsCodec
+    , extensions: CJR.optional CJ.jobject
+    }
 
-    ~> "timeout" := record.timeout
-
-    ~> "rpid" := record.rpid
-
-    ~> "allowcredentials" := record.allowcredentials
-
-    ~> "userverification" := record.userverification
-
-    ~> "hints" := record.hints
-
-    ~> "extensions" := record.extensions
-    ~> jsonEmptyObject
-
-instance decodeJsonPublicKeyCredentialRequestOptions :: DecodeJson PublicKeyCredentialRequestOptions where
-  decodeJson json = do
-    obj <- decodeJson json
-    challenge <- obj .: "challenge"
-    timeout <- obj .:? "timeout"
-    rpid <- obj .:? "rpid"
-    allowcredentials <- obj .:? "allowcredentials"
-    userverification <- obj .:? "userverification"
-    hints <- obj .:? "hints"
-    extensions <- obj .:? "extensions"
-    pure { challenge, timeout, rpid, allowcredentials, userverification, hints, extensions }
 -- | Request to refresh an access token
 -- |
--- | * `refreshtoken`: `String` -
--- | Refresh token used to generate a new access token
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
+-- | * `refreshtoken`: `String` - Refresh token used to generate a new access token
 type RefreshTokenRequest =
-  {refreshtoken :: String --
--- | Refresh token used to generate a new access token
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
+  { refreshtoken :: String -- Refresh token used to generate a new access token
   }
 
--- JSON instances for RefreshTokenRequest
-instance encodeJsonRefreshTokenRequest :: EncodeJson RefreshTokenRequest where
-  encodeJson record =
-    "refreshtoken" := record.refreshtoken
-    ~> jsonEmptyObject
+refreshtokenrequestCodec :: CJ.Codec RefreshTokenRequest
+refreshtokenrequestCodec =
+  CJ.object $ CJR.record
+    { refreshtoken: CJ.identity CJ.string
+    }
 
-instance decodeJsonRefreshTokenRequest :: DecodeJson RefreshTokenRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    refreshtoken <- obj .: "refreshtoken"
-    pure { refreshtoken }
 -- |
--- |
--- | * `name`: `String` -
--- | A human-palatable name for the entity
--- | * `id`: `String` -
--- | A unique identifier for the Relying Party entity, which sets the RP ID
+-- | * `name`: `String` - A human-palatable name for the entity
+-- | * `id`: `String` - A unique identifier for the Relying Party entity, which sets the RP ID
 type RelyingPartyEntity =
-  {name :: String --
--- | A human-palatable name for the entity
-  , id :: String --
--- | A unique identifier for the Relying Party entity, which sets the RP ID
+  { name :: String -- A human-palatable name for the entity
+  , id :: String -- A unique identifier for the Relying Party entity, which sets the RP ID
   }
 
--- JSON instances for RelyingPartyEntity
-instance encodeJsonRelyingPartyEntity :: EncodeJson RelyingPartyEntity where
-  encodeJson record =
-    "name" := record.name
-
-    ~> "id" := record.id
-    ~> jsonEmptyObject
-
-instance decodeJsonRelyingPartyEntity :: DecodeJson RelyingPartyEntity where
-  decodeJson json = do
-    obj <- decodeJson json
-    name <- obj .: "name"
-    id <- obj .: "id"
-    pure { name, id }
+relyingpartyentityCodec :: CJ.Codec RelyingPartyEntity
+relyingpartyentityCodec =
+  CJ.object $ CJR.record
+    { name: CJ.identity CJ.string
+    , id: CJ.identity CJ.string
+    }
 
 -- | The resident key requirement
 data ResidentKeyRequirement
@@ -1206,916 +785,449 @@ instance showResidentKeyRequirement :: Show ResidentKeyRequirement where
 residentkeyrequirementCodec :: CJ.Codec ResidentKeyRequirement
 residentkeyrequirementCodec = CJ.prismaticCodec "ResidentKeyRequirement" dec enc CJ.string
   where
-    dec = case _ of
-      "Discouraged" -> Just ResidentKeyRequirement_Discouraged
-      "Preferred" -> Just ResidentKeyRequirement_Preferred
-      "Required" -> Just ResidentKeyRequirement_Required
-      _ -> Nothing
+  dec = case _ of
+    "Discouraged" -> Just ResidentKeyRequirement_Discouraged
+    "Preferred" -> Just ResidentKeyRequirement_Preferred
+    "Required" -> Just ResidentKeyRequirement_Required
+    _ -> Nothing
 
-    enc = case _ of
-      ResidentKeyRequirement_Discouraged -> "Discouraged"
-      ResidentKeyRequirement_Preferred -> "Preferred"
-      ResidentKeyRequirement_Required -> "Required"
+  enc = case _ of
+    ResidentKeyRequirement_Discouraged -> "Discouraged"
+    ResidentKeyRequirement_Preferred -> "Preferred"
+    ResidentKeyRequirement_Required -> "Required"
+
 -- | User authentication session containing tokens and user information
 -- |
--- | * `accesstoken`: `String` -
--- | JWT token for authenticating API requests
--- | Example: `"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
--- | * `accesstokenexpiresin`: `Int` -
--- | Expiration time of the access token in seconds
--- | Example: `900`
--- | Format: int64
--- | * `refreshtokenid`: `String` -
--- | Identifier for the refresh token
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
--- | * `refreshtoken`: `String` -
--- | Token used to refresh the access token
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
--- | * `user` (Optional): `User` -
--- | User profile and account information
+-- | * `accesstoken`: `String` - JWT token for authenticating API requests
+-- | * `accesstokenexpiresin`: `Int` - Expiration time of the access token in seconds
+-- | * `refreshtokenid`: `String` - Identifier for the refresh token
+-- | * `refreshtoken`: `String` - Token used to refresh the access token
+-- | * `user` (Optional): `Maybe User` - User profile and account information
 type Session =
-  {accesstoken :: String --
--- | JWT token for authenticating API requests
--- | Example: `"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
-  , accesstokenexpiresin :: Int --
--- | Expiration time of the access token in seconds
--- | Example: `900`
--- | Format: int64
-  , refreshtokenid :: String --
--- | Identifier for the refresh token
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
-  , refreshtoken :: String --
--- | Token used to refresh the access token
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
-  , user :: Maybe (User) --
--- | User profile and account information
+  { accesstoken :: String -- JWT token for authenticating API requests
+  , accesstokenexpiresin :: Int -- Expiration time of the access token in seconds
+  , refreshtokenid :: String -- Identifier for the refresh token
+  , refreshtoken :: String -- Token used to refresh the access token
+  , user :: Maybe User -- User profile and account information
   }
 
--- JSON instances for Session
-instance encodeJsonSession :: EncodeJson Session where
-  encodeJson record =
-    "accesstoken" := record.accesstoken
+sessionCodec :: CJ.Codec Session
+sessionCodec =
+  CJ.object $ CJR.record
+    { accesstoken: CJ.identity CJ.string
+    , accesstokenexpiresin: CJ.identity CJ.int
+    , refreshtokenid: CJ.identity CJ.string
+    , refreshtoken: CJ.identity CJ.string
+    , user: CJR.optional userCodec
+    }
 
-    ~> "accesstokenexpiresin" := record.accesstokenexpiresin
-
-    ~> "refreshtokenid" := record.refreshtokenid
-
-    ~> "refreshtoken" := record.refreshtoken
-
-    ~> "user" := record.user
-    ~> jsonEmptyObject
-
-instance decodeJsonSession :: DecodeJson Session where
-  decodeJson json = do
-    obj <- decodeJson json
-    accesstoken <- obj .: "accesstoken"
-    accesstokenexpiresin <- obj .: "accesstokenexpiresin"
-    refreshtokenid <- obj .: "refreshtokenid"
-    refreshtoken <- obj .: "refreshtoken"
-    user <- obj .:? "user"
-    pure { accesstoken, accesstokenexpiresin, refreshtokenid, refreshtoken, user }
 -- | Container for session information
 -- |
--- | * `session` (Optional): `Session` -
--- | User authentication session containing tokens and user information
+-- | * `session` (Optional): `Maybe Session` - User authentication session containing tokens and user information
 type SessionPayload =
-  {session :: Maybe (Session) --
--- | User authentication session containing tokens and user information
+  { session :: Maybe Session -- User authentication session containing tokens and user information
   }
 
--- JSON instances for SessionPayload
-instance encodeJsonSessionPayload :: EncodeJson SessionPayload where
-  encodeJson record =
-    "session" := record.session
-    ~> jsonEmptyObject
+sessionpayloadCodec :: CJ.Codec SessionPayload
+sessionpayloadCodec =
+  CJ.object $ CJR.record
+    { session: CJR.optional sessionCodec
+    }
 
-instance decodeJsonSessionPayload :: DecodeJson SessionPayload where
-  decodeJson json = do
-    obj <- decodeJson json
-    session <- obj .:? "session"
-    pure { session }
 -- |
--- |
--- | * `displayname` (Optional): `String` -
--- | Example: `"John Smith"`
--- | * `locale` (Optional): `String` -
--- | A two-characters locale
--- | Example: `"en"`
--- | MinLength: 2
--- | MaxLength: 2
--- | * `metadata` (Optional): `Object` -
--- | Example: `{"firstName":"John","lastName":"Smith"}`
+-- | * `displayname` (Optional): `Maybe String`
+-- | * `locale` (Optional): `Maybe String` - A two-characters locale
+-- | * `metadata` (Optional): `Maybe J.JObject`
 type SignInAnonymousRequest =
-  {displayname :: Maybe (String) --
--- | Example: `"John Smith"`
-  , locale :: Maybe (String) --
--- | A two-characters locale
--- | Example: `"en"`
--- | MinLength: 2
--- | MaxLength: 2
-  , metadata :: Maybe (Object) --
--- | Example: `{"firstName":"John","lastName":"Smith"}`
+  { displayname :: Maybe String
+  , locale :: Maybe String -- A two-characters locale
+  , metadata :: Maybe J.JObject
   }
 
--- JSON instances for SignInAnonymousRequest
-instance encodeJsonSignInAnonymousRequest :: EncodeJson SignInAnonymousRequest where
-  encodeJson record =
-    "displayname" := record.displayname
+signinanonymousrequestCodec :: CJ.Codec SignInAnonymousRequest
+signinanonymousrequestCodec =
+  CJ.object $ CJR.record
+    { displayname: CJR.optional CJ.string
+    , locale: CJR.optional CJ.string
+    , metadata: CJR.optional CJ.jobject
+    }
 
-    ~> "locale" := record.locale
-
-    ~> "metadata" := record.metadata
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInAnonymousRequest :: DecodeJson SignInAnonymousRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    displayname <- obj .:? "displayname"
-    locale <- obj .:? "locale"
-    metadata <- obj .:? "metadata"
-    pure { displayname, locale, metadata }
 -- | Request to authenticate using email and password
 -- |
--- | * `email`: `String` -
--- | User's email address
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `password`: `String` -
--- | User's password
--- | Example: `"Str0ngPassw#ord-94|%"`
--- | MinLength: 3
--- | MaxLength: 50
+-- | * `email`: `String` - User's email address
+-- | * `password`: `String` - User's password
 type SignInEmailPasswordRequest =
-  {email :: String --
--- | User's email address
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , password :: String --
--- | User's password
--- | Example: `"Str0ngPassw#ord-94|%"`
--- | MinLength: 3
--- | MaxLength: 50
+  { email :: String -- User's email address
+  , password :: String -- User's password
   }
 
--- JSON instances for SignInEmailPasswordRequest
-instance encodeJsonSignInEmailPasswordRequest :: EncodeJson SignInEmailPasswordRequest where
-  encodeJson record =
-    "email" := record.email
+signinemailpasswordrequestCodec :: CJ.Codec SignInEmailPasswordRequest
+signinemailpasswordrequestCodec =
+  CJ.object $ CJR.record
+    { email: CJ.identity CJ.string
+    , password: CJ.identity CJ.string
+    }
 
-    ~> "password" := record.password
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInEmailPasswordRequest :: DecodeJson SignInEmailPasswordRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    email <- obj .: "email"
-    password <- obj .: "password"
-    pure { email, password }
 -- | Response for email-password authentication that may include a session or MFA challenge
 -- |
--- | * `session` (Optional): `Session` -
--- | User authentication session containing tokens and user information
--- | * `mfa` (Optional): `MFAChallengePayload` -
--- | Challenge payload for multi-factor authentication
+-- | * `session` (Optional): `Maybe Session` - User authentication session containing tokens and user information
+-- | * `mfa` (Optional): `Maybe MFAChallengePayload` - Challenge payload for multi-factor authentication
 type SignInEmailPasswordResponse =
-  {session :: Maybe (Session) --
--- | User authentication session containing tokens and user information
-  , mfa :: Maybe (MFAChallengePayload) --
--- | Challenge payload for multi-factor authentication
+  { session :: Maybe Session -- User authentication session containing tokens and user information
+  , mfa :: Maybe MFAChallengePayload -- Challenge payload for multi-factor authentication
   }
 
--- JSON instances for SignInEmailPasswordResponse
-instance encodeJsonSignInEmailPasswordResponse :: EncodeJson SignInEmailPasswordResponse where
-  encodeJson record =
-    "session" := record.session
+signinemailpasswordresponseCodec :: CJ.Codec SignInEmailPasswordResponse
+signinemailpasswordresponseCodec =
+  CJ.object $ CJR.record
+    { session: CJR.optional sessionCodec
+    , mfa: CJR.optional mfachallengepayloadCodec
+    }
 
-    ~> "mfa" := record.mfa
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInEmailPasswordResponse :: DecodeJson SignInEmailPasswordResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    session <- obj .:? "session"
-    mfa <- obj .:? "mfa"
-    pure { session, mfa }
 -- |
--- |
--- | * `provider`: `IdTokenProvider` -
--- | * `idtoken`: `String` -
--- | Apple ID token
--- | * `nonce` (Optional): `String` -
--- | Nonce used during sign in process
--- | * `options` (Optional): `SignUpOptions` -
+-- | * `provider`: `IdTokenProvider`
+-- | * `idtoken`: `String` - Apple ID token
+-- | * `nonce` (Optional): `Maybe String` - Nonce used during sign in process
+-- | * `options` (Optional): `Maybe SignUpOptions`
 type SignInIdTokenRequest =
-  {provider :: IdTokenProvider --
-  , idtoken :: String --
--- | Apple ID token
-  , nonce :: Maybe (String) --
--- | Nonce used during sign in process
-  , options :: Maybe (SignUpOptions) --
+  { provider :: IdTokenProvider
+  , idtoken :: String -- Apple ID token
+  , nonce :: Maybe String -- Nonce used during sign in process
+  , options :: Maybe SignUpOptions
   }
 
--- JSON instances for SignInIdTokenRequest
-instance encodeJsonSignInIdTokenRequest :: EncodeJson SignInIdTokenRequest where
-  encodeJson record =
-    "provider" := record.provider
+signinidtokenrequestCodec :: CJ.Codec SignInIdTokenRequest
+signinidtokenrequestCodec =
+  CJ.object $ CJR.record
+    { provider: CJ.identity idtokenproviderCodec
+    , idtoken: CJ.identity CJ.string
+    , nonce: CJR.optional CJ.string
+    , options: CJR.optional signupoptionsCodec
+    }
 
-    ~> "idtoken" := record.idtoken
-
-    ~> "nonce" := record.nonce
-
-    ~> "options" := record.options
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInIdTokenRequest :: DecodeJson SignInIdTokenRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    provider <- obj .: "provider"
-    idtoken <- obj .: "idtoken"
-    nonce <- obj .:? "nonce"
-    options <- obj .:? "options"
-    pure { provider, idtoken, nonce, options }
 -- |
--- |
--- | * `ticket`: `String` -
--- | Ticket
--- | Pattern: ^mfaTotp:.*$
--- | * `otp`: `String` -
--- | One time password
+-- | * `ticket`: `String` - Ticket
+-- | * `otp`: `String` - One time password
 type SignInMfaTotpRequest =
-  {ticket :: String --
--- | Ticket
--- | Pattern: ^mfaTotp:.*$
-  , otp :: String --
--- | One time password
+  { ticket :: String -- Ticket
+  , otp :: String -- One time password
   }
 
--- JSON instances for SignInMfaTotpRequest
-instance encodeJsonSignInMfaTotpRequest :: EncodeJson SignInMfaTotpRequest where
-  encodeJson record =
-    "ticket" := record.ticket
+signinmfatotprequestCodec :: CJ.Codec SignInMfaTotpRequest
+signinmfatotprequestCodec =
+  CJ.object $ CJR.record
+    { ticket: CJ.identity CJ.string
+    , otp: CJ.identity CJ.string
+    }
 
-    ~> "otp" := record.otp
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInMfaTotpRequest :: DecodeJson SignInMfaTotpRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    ticket <- obj .: "ticket"
-    otp <- obj .: "otp"
-    pure { ticket, otp }
 -- |
--- |
--- | * `email`: `String` -
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `options` (Optional): `SignUpOptions` -
+-- | * `email`: `String` - A valid email
+-- | * `options` (Optional): `Maybe SignUpOptions`
 type SignInOTPEmailRequest =
-  {email :: String --
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , options :: Maybe (SignUpOptions) --
+  { email :: String -- A valid email
+  , options :: Maybe SignUpOptions
   }
 
--- JSON instances for SignInOTPEmailRequest
-instance encodeJsonSignInOTPEmailRequest :: EncodeJson SignInOTPEmailRequest where
-  encodeJson record =
-    "email" := record.email
+signinotpemailrequestCodec :: CJ.Codec SignInOTPEmailRequest
+signinotpemailrequestCodec =
+  CJ.object $ CJR.record
+    { email: CJ.identity CJ.string
+    , options: CJR.optional signupoptionsCodec
+    }
 
-    ~> "options" := record.options
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInOTPEmailRequest :: DecodeJson SignInOTPEmailRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    email <- obj .: "email"
-    options <- obj .:? "options"
-    pure { email, options }
 -- |
--- |
--- | * `otp`: `String` -
--- | One time password
--- | * `email`: `String` -
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
+-- | * `otp`: `String` - One time password
+-- | * `email`: `String` - A valid email
 type SignInOTPEmailVerifyRequest =
-  {otp :: String --
--- | One time password
-  , email :: String --
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
+  { otp :: String -- One time password
+  , email :: String -- A valid email
   }
 
--- JSON instances for SignInOTPEmailVerifyRequest
-instance encodeJsonSignInOTPEmailVerifyRequest :: EncodeJson SignInOTPEmailVerifyRequest where
-  encodeJson record =
-    "otp" := record.otp
+signinotpemailverifyrequestCodec :: CJ.Codec SignInOTPEmailVerifyRequest
+signinotpemailverifyrequestCodec =
+  CJ.object $ CJR.record
+    { otp: CJ.identity CJ.string
+    , email: CJ.identity CJ.string
+    }
 
-    ~> "email" := record.email
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInOTPEmailVerifyRequest :: DecodeJson SignInOTPEmailVerifyRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    otp <- obj .: "otp"
-    email <- obj .: "email"
-    pure { otp, email }
 -- |
--- |
--- | * `session` (Optional): `Session` -
--- | User authentication session containing tokens and user information
+-- | * `session` (Optional): `Maybe Session` - User authentication session containing tokens and user information
 type SignInOTPEmailVerifyResponse =
-  {session :: Maybe (Session) --
--- | User authentication session containing tokens and user information
+  { session :: Maybe Session -- User authentication session containing tokens and user information
   }
 
--- JSON instances for SignInOTPEmailVerifyResponse
-instance encodeJsonSignInOTPEmailVerifyResponse :: EncodeJson SignInOTPEmailVerifyResponse where
-  encodeJson record =
-    "session" := record.session
-    ~> jsonEmptyObject
+signinotpemailverifyresponseCodec :: CJ.Codec SignInOTPEmailVerifyResponse
+signinotpemailverifyresponseCodec =
+  CJ.object $ CJR.record
+    { session: CJR.optional sessionCodec
+    }
 
-instance decodeJsonSignInOTPEmailVerifyResponse :: DecodeJson SignInOTPEmailVerifyResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    session <- obj .:? "session"
-    pure { session }
 -- |
--- |
--- | * `personalaccesstoken`: `String` -
--- | PAT
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
+-- | * `personalaccesstoken`: `String` - PAT
 type SignInPATRequest =
-  {personalaccesstoken :: String --
--- | PAT
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
+  { personalaccesstoken :: String -- PAT
   }
 
--- JSON instances for SignInPATRequest
-instance encodeJsonSignInPATRequest :: EncodeJson SignInPATRequest where
-  encodeJson record =
-    "personalaccesstoken" := record.personalaccesstoken
-    ~> jsonEmptyObject
+signinpatrequestCodec :: CJ.Codec SignInPATRequest
+signinpatrequestCodec =
+  CJ.object $ CJR.record
+    { personalaccesstoken: CJ.identity CJ.string
+    }
 
-instance decodeJsonSignInPATRequest :: DecodeJson SignInPATRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    personalaccesstoken <- obj .: "personalaccesstoken"
-    pure { personalaccesstoken }
 -- |
--- |
--- | * `email`: `String` -
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `options` (Optional): `SignUpOptions` -
+-- | * `email`: `String` - A valid email
+-- | * `options` (Optional): `Maybe SignUpOptions`
 type SignInPasswordlessEmailRequest =
-  {email :: String --
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , options :: Maybe (SignUpOptions) --
+  { email :: String -- A valid email
+  , options :: Maybe SignUpOptions
   }
 
--- JSON instances for SignInPasswordlessEmailRequest
-instance encodeJsonSignInPasswordlessEmailRequest :: EncodeJson SignInPasswordlessEmailRequest where
-  encodeJson record =
-    "email" := record.email
+signinpasswordlessemailrequestCodec :: CJ.Codec SignInPasswordlessEmailRequest
+signinpasswordlessemailrequestCodec =
+  CJ.object $ CJR.record
+    { email: CJ.identity CJ.string
+    , options: CJR.optional signupoptionsCodec
+    }
 
-    ~> "options" := record.options
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInPasswordlessEmailRequest :: DecodeJson SignInPasswordlessEmailRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    email <- obj .: "email"
-    options <- obj .:? "options"
-    pure { email, options }
 -- |
--- |
--- | * `phonenumber`: `String` -
--- | Phone number of the user
--- | Example: `"+123456789"`
--- | * `otp`: `String` -
--- | One-time password received by SMS
+-- | * `phonenumber`: `String` - Phone number of the user
+-- | * `otp`: `String` - One-time password received by SMS
 type SignInPasswordlessSmsOtpRequest =
-  {phonenumber :: String --
--- | Phone number of the user
--- | Example: `"+123456789"`
-  , otp :: String --
--- | One-time password received by SMS
+  { phonenumber :: String -- Phone number of the user
+  , otp :: String -- One-time password received by SMS
   }
 
--- JSON instances for SignInPasswordlessSmsOtpRequest
-instance encodeJsonSignInPasswordlessSmsOtpRequest :: EncodeJson SignInPasswordlessSmsOtpRequest where
-  encodeJson record =
-    "phonenumber" := record.phonenumber
+signinpasswordlesssmsotprequestCodec :: CJ.Codec SignInPasswordlessSmsOtpRequest
+signinpasswordlesssmsotprequestCodec =
+  CJ.object $ CJR.record
+    { phonenumber: CJ.identity CJ.string
+    , otp: CJ.identity CJ.string
+    }
 
-    ~> "otp" := record.otp
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInPasswordlessSmsOtpRequest :: DecodeJson SignInPasswordlessSmsOtpRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    phonenumber <- obj .: "phonenumber"
-    otp <- obj .: "otp"
-    pure { phonenumber, otp }
 -- |
--- |
--- | * `session` (Optional): `Session` -
--- | User authentication session containing tokens and user information
--- | * `mfa` (Optional): `MFAChallengePayload` -
--- | Challenge payload for multi-factor authentication
+-- | * `session` (Optional): `Maybe Session` - User authentication session containing tokens and user information
+-- | * `mfa` (Optional): `Maybe MFAChallengePayload` - Challenge payload for multi-factor authentication
 type SignInPasswordlessSmsOtpResponse =
-  {session :: Maybe (Session) --
--- | User authentication session containing tokens and user information
-  , mfa :: Maybe (MFAChallengePayload) --
--- | Challenge payload for multi-factor authentication
+  { session :: Maybe Session -- User authentication session containing tokens and user information
+  , mfa :: Maybe MFAChallengePayload -- Challenge payload for multi-factor authentication
   }
 
--- JSON instances for SignInPasswordlessSmsOtpResponse
-instance encodeJsonSignInPasswordlessSmsOtpResponse :: EncodeJson SignInPasswordlessSmsOtpResponse where
-  encodeJson record =
-    "session" := record.session
+signinpasswordlesssmsotpresponseCodec :: CJ.Codec SignInPasswordlessSmsOtpResponse
+signinpasswordlesssmsotpresponseCodec =
+  CJ.object $ CJR.record
+    { session: CJR.optional sessionCodec
+    , mfa: CJR.optional mfachallengepayloadCodec
+    }
 
-    ~> "mfa" := record.mfa
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInPasswordlessSmsOtpResponse :: DecodeJson SignInPasswordlessSmsOtpResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    session <- obj .:? "session"
-    mfa <- obj .:? "mfa"
-    pure { session, mfa }
 -- |
--- |
--- | * `phonenumber`: `String` -
--- | Phone number of the user
--- | Example: `"+123456789"`
--- | * `options` (Optional): `SignUpOptions` -
+-- | * `phonenumber`: `String` - Phone number of the user
+-- | * `options` (Optional): `Maybe SignUpOptions`
 type SignInPasswordlessSmsRequest =
-  {phonenumber :: String --
--- | Phone number of the user
--- | Example: `"+123456789"`
-  , options :: Maybe (SignUpOptions) --
+  { phonenumber :: String -- Phone number of the user
+  , options :: Maybe SignUpOptions
   }
 
--- JSON instances for SignInPasswordlessSmsRequest
-instance encodeJsonSignInPasswordlessSmsRequest :: EncodeJson SignInPasswordlessSmsRequest where
-  encodeJson record =
-    "phonenumber" := record.phonenumber
+signinpasswordlesssmsrequestCodec :: CJ.Codec SignInPasswordlessSmsRequest
+signinpasswordlesssmsrequestCodec =
+  CJ.object $ CJR.record
+    { phonenumber: CJ.identity CJ.string
+    , options: CJR.optional signupoptionsCodec
+    }
 
-    ~> "options" := record.options
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInPasswordlessSmsRequest :: DecodeJson SignInPasswordlessSmsRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    phonenumber <- obj .: "phonenumber"
-    options <- obj .:? "options"
-    pure { phonenumber, options }
 -- |
--- |
--- | * `email` (Optional): `String` -
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
+-- | * `email` (Optional): `Maybe String` - A valid email
 type SignInWebauthnRequest =
-  {email :: Maybe (String) --
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
+  { email :: Maybe String -- A valid email
   }
 
--- JSON instances for SignInWebauthnRequest
-instance encodeJsonSignInWebauthnRequest :: EncodeJson SignInWebauthnRequest where
-  encodeJson record =
-    "email" := record.email
-    ~> jsonEmptyObject
+signinwebauthnrequestCodec :: CJ.Codec SignInWebauthnRequest
+signinwebauthnrequestCodec =
+  CJ.object $ CJR.record
+    { email: CJR.optional CJ.string
+    }
 
-instance decodeJsonSignInWebauthnRequest :: DecodeJson SignInWebauthnRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    email <- obj .:? "email"
-    pure { email }
 -- |
--- |
--- | * `email` (Optional): `String` -
--- | A valid email. Deprecated, no longer used
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `credential`: `CredentialAssertionResponse` -
+-- | * `email` (Optional): `Maybe String` - A valid email. Deprecated, no longer used
+-- | * `credential`: `CredentialAssertionResponse`
 type SignInWebauthnVerifyRequest =
-  {email :: Maybe (String) --
--- | A valid email. Deprecated, no longer used
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , credential :: CredentialAssertionResponse --
+  { email :: Maybe String -- A valid email. Deprecated, no longer used
+  , credential :: CredentialAssertionResponse
   }
 
--- JSON instances for SignInWebauthnVerifyRequest
-instance encodeJsonSignInWebauthnVerifyRequest :: EncodeJson SignInWebauthnVerifyRequest where
-  encodeJson record =
-    "email" := record.email
+signinwebauthnverifyrequestCodec :: CJ.Codec SignInWebauthnVerifyRequest
+signinwebauthnverifyrequestCodec =
+  CJ.object $ CJR.record
+    { email: CJR.optional CJ.string
+    , credential: CJ.identity credentialassertionresponseCodec
+    }
 
-    ~> "credential" := record.credential
-    ~> jsonEmptyObject
-
-instance decodeJsonSignInWebauthnVerifyRequest :: DecodeJson SignInWebauthnVerifyRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    email <- obj .:? "email"
-    credential <- obj .: "credential"
-    pure { email, credential }
 -- |
--- |
--- | * `refreshtoken` (Optional): `String` -
--- | Refresh token for the current session
--- | * `all` (Optional): `Boolean` -
--- | Sign out from all connected devices
+-- | * `refreshtoken` (Optional): `Maybe String` - Refresh token for the current session
+-- | * `all` (Optional): `Maybe Boolean` - Sign out from all connected devices
 type SignOutRequest =
-  {refreshtoken :: Maybe (String) --
--- | Refresh token for the current session
-  , all :: Maybe (Boolean) --
--- | Sign out from all connected devices
+  { refreshtoken :: Maybe String -- Refresh token for the current session
+  , all :: Maybe Boolean -- Sign out from all connected devices
   }
 
--- JSON instances for SignOutRequest
-instance encodeJsonSignOutRequest :: EncodeJson SignOutRequest where
-  encodeJson record =
-    "refreshtoken" := record.refreshtoken
+signoutrequestCodec :: CJ.Codec SignOutRequest
+signoutrequestCodec =
+  CJ.object $ CJR.record
+    { refreshtoken: CJR.optional CJ.string
+    , all: CJR.optional CJ.boolean
+    }
 
-    ~> "all" := record.all
-    ~> jsonEmptyObject
-
-instance decodeJsonSignOutRequest :: DecodeJson SignOutRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    refreshtoken <- obj .:? "refreshtoken"
-    all <- obj .:? "all"
-    pure { refreshtoken, all }
 -- | Request to register a new user with email and password
 -- |
--- | * `email`: `String` -
--- | Email address for the new user account
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `password`: `String` -
--- | Password for the new user account
--- | Example: `"Str0ngPassw#ord-94|%"`
--- | MinLength: 3
--- | MaxLength: 50
--- | * `options` (Optional): `SignUpOptions` -
+-- | * `email`: `String` - Email address for the new user account
+-- | * `password`: `String` - Password for the new user account
+-- | * `options` (Optional): `Maybe SignUpOptions`
 type SignUpEmailPasswordRequest =
-  {email :: String --
--- | Email address for the new user account
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , password :: String --
--- | Password for the new user account
--- | Example: `"Str0ngPassw#ord-94|%"`
--- | MinLength: 3
--- | MaxLength: 50
-  , options :: Maybe (SignUpOptions) --
+  { email :: String -- Email address for the new user account
+  , password :: String -- Password for the new user account
+  , options :: Maybe SignUpOptions
   }
 
--- JSON instances for SignUpEmailPasswordRequest
-instance encodeJsonSignUpEmailPasswordRequest :: EncodeJson SignUpEmailPasswordRequest where
-  encodeJson record =
-    "email" := record.email
+signupemailpasswordrequestCodec :: CJ.Codec SignUpEmailPasswordRequest
+signupemailpasswordrequestCodec =
+  CJ.object $ CJR.record
+    { email: CJ.identity CJ.string
+    , password: CJ.identity CJ.string
+    , options: CJR.optional signupoptionsCodec
+    }
 
-    ~> "password" := record.password
-
-    ~> "options" := record.options
-    ~> jsonEmptyObject
-
-instance decodeJsonSignUpEmailPasswordRequest :: DecodeJson SignUpEmailPasswordRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    email <- obj .: "email"
-    password <- obj .: "password"
-    options <- obj .:? "options"
-    pure { email, password, options }
 -- |
--- |
--- | * `allowedroles` (Optional): `Array String` -
--- | Example: `["me","user"]`
--- | * `defaultrole` (Optional): `String` -
--- | Example: `"user"`
--- | * `displayname` (Optional): `String` -
--- | Example: `"John Smith"`
--- | Pattern: ^[\p{L}\p{N}\p{S} ,.'-]+$
--- | MaxLength: 32
--- | * `locale` (Optional): `String` -
--- | A two-characters locale
--- | Example: `"en"`
--- | MinLength: 2
--- | MaxLength: 2
--- | * `metadata` (Optional): `Object` -
--- | Example: `{"firstName":"John","lastName":"Smith"}`
--- | * `redirectto` (Optional): `String` -
--- | Example: `"https://my-app.com/catch-redirection"`
--- | Format: uri
+-- | * `allowedroles` (Optional): `Maybe (Array String)`
+-- | * `defaultrole` (Optional): `Maybe String`
+-- | * `displayname` (Optional): `Maybe String`
+-- | * `locale` (Optional): `Maybe String` - A two-characters locale
+-- | * `metadata` (Optional): `Maybe J.JObject`
+-- | * `redirectto` (Optional): `Maybe String`
 type SignUpOptions =
-  {allowedroles :: Maybe (Array String) --
--- | Example: `["me","user"]`
-  , defaultrole :: Maybe (String) --
--- | Example: `"user"`
-  , displayname :: Maybe (String) --
--- | Example: `"John Smith"`
--- | Pattern: ^[\p{L}\p{N}\p{S} ,.'-]+$
--- | MaxLength: 32
-  , locale :: Maybe (String) --
--- | A two-characters locale
--- | Example: `"en"`
--- | MinLength: 2
--- | MaxLength: 2
-  , metadata :: Maybe (Object) --
--- | Example: `{"firstName":"John","lastName":"Smith"}`
-  , redirectto :: Maybe (String) --
--- | Example: `"https://my-app.com/catch-redirection"`
--- | Format: uri
+  { allowedroles :: Maybe (Array String)
+  , defaultrole :: Maybe String
+  , displayname :: Maybe String
+  , locale :: Maybe String -- A two-characters locale
+  , metadata :: Maybe J.JObject
+  , redirectto :: Maybe String
   }
 
--- JSON instances for SignUpOptions
-instance encodeJsonSignUpOptions :: EncodeJson SignUpOptions where
-  encodeJson record =
-    "allowedroles" := record.allowedroles
+signupoptionsCodec :: CJ.Codec SignUpOptions
+signupoptionsCodec =
+  CJ.object $ CJR.record
+    { allowedroles: CJR.optional CJ.array CJ.string
+    , defaultrole: CJR.optional CJ.string
+    , displayname: CJR.optional CJ.string
+    , locale: CJR.optional CJ.string
+    , metadata: CJR.optional CJ.jobject
+    , redirectto: CJR.optional CJ.string
+    }
 
-    ~> "defaultrole" := record.defaultrole
-
-    ~> "displayname" := record.displayname
-
-    ~> "locale" := record.locale
-
-    ~> "metadata" := record.metadata
-
-    ~> "redirectto" := record.redirectto
-    ~> jsonEmptyObject
-
-instance decodeJsonSignUpOptions :: DecodeJson SignUpOptions where
-  decodeJson json = do
-    obj <- decodeJson json
-    allowedroles <- obj .:? "allowedroles"
-    defaultrole <- obj .:? "defaultrole"
-    displayname <- obj .:? "displayname"
-    locale <- obj .:? "locale"
-    metadata <- obj .:? "metadata"
-    redirectto <- obj .:? "redirectto"
-    pure { allowedroles, defaultrole, displayname, locale, metadata, redirectto }
 -- |
--- |
--- | * `email`: `String` -
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `options` (Optional): `SignUpOptions` -
+-- | * `email`: `String` - A valid email
+-- | * `options` (Optional): `Maybe SignUpOptions`
 type SignUpWebauthnRequest =
-  {email :: String --
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , options :: Maybe (SignUpOptions) --
+  { email :: String -- A valid email
+  , options :: Maybe SignUpOptions
   }
 
--- JSON instances for SignUpWebauthnRequest
-instance encodeJsonSignUpWebauthnRequest :: EncodeJson SignUpWebauthnRequest where
-  encodeJson record =
-    "email" := record.email
+signupwebauthnrequestCodec :: CJ.Codec SignUpWebauthnRequest
+signupwebauthnrequestCodec =
+  CJ.object $ CJR.record
+    { email: CJ.identity CJ.string
+    , options: CJR.optional signupoptionsCodec
+    }
 
-    ~> "options" := record.options
-    ~> jsonEmptyObject
-
-instance decodeJsonSignUpWebauthnRequest :: DecodeJson SignUpWebauthnRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    email <- obj .: "email"
-    options <- obj .:? "options"
-    pure { email, options }
 -- |
--- |
--- | * `credential`: `CredentialCreationResponse` -
--- | * `options` (Optional): `SignUpOptions` -
--- | * `nickname` (Optional): `String` -
--- | Nickname for the security key
+-- | * `credential`: `CredentialCreationResponse`
+-- | * `options` (Optional): `Maybe SignUpOptions`
+-- | * `nickname` (Optional): `Maybe String` - Nickname for the security key
 type SignUpWebauthnVerifyRequest =
-  {credential :: CredentialCreationResponse --
-  , options :: Maybe (SignUpOptions) --
-  , nickname :: Maybe (String) --
--- | Nickname for the security key
+  { credential :: CredentialCreationResponse
+  , options :: Maybe SignUpOptions
+  , nickname :: Maybe String -- Nickname for the security key
   }
 
--- JSON instances for SignUpWebauthnVerifyRequest
-instance encodeJsonSignUpWebauthnVerifyRequest :: EncodeJson SignUpWebauthnVerifyRequest where
-  encodeJson record =
-    "credential" := record.credential
+signupwebauthnverifyrequestCodec :: CJ.Codec SignUpWebauthnVerifyRequest
+signupwebauthnverifyrequestCodec =
+  CJ.object $ CJR.record
+    { credential: CJ.identity credentialcreationresponseCodec
+    , options: CJR.optional signupoptionsCodec
+    , nickname: CJR.optional CJ.string
+    }
 
-    ~> "options" := record.options
-
-    ~> "nickname" := record.nickname
-    ~> jsonEmptyObject
-
-instance decodeJsonSignUpWebauthnVerifyRequest :: DecodeJson SignUpWebauthnVerifyRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    credential <- obj .: "credential"
-    options <- obj .:? "options"
-    nickname <- obj .:? "nickname"
-    pure { credential, options, nickname }
 -- | Response containing TOTP setup information for MFA
 -- |
--- | * `imageurl`: `String` -
--- | URL to QR code image for scanning with an authenticator app
--- | Example: `"data:image/png;base64,iVBORw0KGg..."`
--- | * `totpsecret`: `String` -
--- | TOTP secret key for manual setup with an authenticator app
--- | Example: `"ABCDEFGHIJK23456"`
+-- | * `imageurl`: `String` - URL to QR code image for scanning with an authenticator app
+-- | * `totpsecret`: `String` - TOTP secret key for manual setup with an authenticator app
 type TotpGenerateResponse =
-  {imageurl :: String --
--- | URL to QR code image for scanning with an authenticator app
--- | Example: `"data:image/png;base64,iVBORw0KGg..."`
-  , totpsecret :: String --
--- | TOTP secret key for manual setup with an authenticator app
--- | Example: `"ABCDEFGHIJK23456"`
+  { imageurl :: String -- URL to QR code image for scanning with an authenticator app
+  , totpsecret :: String -- TOTP secret key for manual setup with an authenticator app
   }
 
--- JSON instances for TotpGenerateResponse
-instance encodeJsonTotpGenerateResponse :: EncodeJson TotpGenerateResponse where
-  encodeJson record =
-    "imageurl" := record.imageurl
-
-    ~> "totpsecret" := record.totpsecret
-    ~> jsonEmptyObject
-
-instance decodeJsonTotpGenerateResponse :: DecodeJson TotpGenerateResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    imageurl <- obj .: "imageurl"
-    totpsecret <- obj .: "totpsecret"
-    pure { imageurl, totpsecret }
+totpgenerateresponseCodec :: CJ.Codec TotpGenerateResponse
+totpgenerateresponseCodec =
+  CJ.object $ CJR.record
+    { imageurl: CJ.identity CJ.string
+    , totpsecret: CJ.identity CJ.string
+    }
 
 -- | Base64url-encoded binary data
 type URLEncodedBase64 = String
 
 urlencodedbase64Codec :: CJ.Codec URLEncodedBase64
 urlencodedbase64Codec = CJ.string
+
 -- | User profile and account information
 -- |
--- | * `avatarurl`: `String` -
--- | URL to the user's profile picture
--- | Example: `"https://myapp.com/avatars/user123.jpg"`
--- | * `createdat`: `String` -
--- | Timestamp when the user account was created
--- | Example: `"2023-01-15T12:34:56Z"`
--- | Format: date-time
--- | * `defaultrole`: `String` -
--- | Default authorization role for the user
--- | Example: `"user"`
--- | * `displayname`: `String` -
--- | User's display name
--- | Example: `"John Smith"`
--- | * `email` (Optional): `String` -
--- | User's email address
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `emailverified`: `Boolean` -
--- | Whether the user's email has been verified
--- | Example: `true`
--- | * `id`: `String` -
--- | Unique identifier for the user
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
--- | * `isanonymous`: `Boolean` -
--- | Whether this is an anonymous user account
--- | Example: `false`
--- | * `locale`: `String` -
--- | User's preferred locale (language code)
--- | Example: `"en"`
--- | MinLength: 2
--- | MaxLength: 2
--- | * `metadata`: `Object` -
--- | Custom metadata associated with the user
--- | Example: `{"firstName":"John","lastName":"Smith"}`
--- | * `phonenumber` (Optional): `String` -
--- | User's phone number
--- | Example: `"+12025550123"`
--- | * `phonenumberverified`: `Boolean` -
--- | Whether the user's phone number has been verified
--- | Example: `false`
--- | * `roles`: `Array String` -
--- | List of roles assigned to the user
--- | Example: `["user","customer"]`
--- | * `activemfatype` (Optional): `String` -
--- | Active MFA type for the user
+-- | * `avatarurl`: `String` - URL to the user's profile picture
+-- | * `createdat`: `String` - Timestamp when the user account was created
+-- | * `defaultrole`: `String` - Default authorization role for the user
+-- | * `displayname`: `String` - User's display name
+-- | * `email` (Optional): `Maybe String` - User's email address
+-- | * `emailverified`: `Boolean` - Whether the user's email has been verified
+-- | * `id`: `String` - Unique identifier for the user
+-- | * `isanonymous`: `Boolean` - Whether this is an anonymous user account
+-- | * `locale`: `String` - User's preferred locale (language code)
+-- | * `metadata`: `J.JObject` - Custom metadata associated with the user
+-- | * `phonenumber` (Optional): `Maybe String` - User's phone number
+-- | * `phonenumberverified`: `Boolean` - Whether the user's phone number has been verified
+-- | * `roles`: `Array String` - List of roles assigned to the user
+-- | * `activemfatype` (Optional): `Maybe String` - Active MFA type for the user
 type User =
-  {avatarurl :: String --
--- | URL to the user's profile picture
--- | Example: `"https://myapp.com/avatars/user123.jpg"`
-  , createdat :: String --
--- | Timestamp when the user account was created
--- | Example: `"2023-01-15T12:34:56Z"`
--- | Format: date-time
-  , defaultrole :: String --
--- | Default authorization role for the user
--- | Example: `"user"`
-  , displayname :: String --
--- | User's display name
--- | Example: `"John Smith"`
-  , email :: Maybe (String) --
--- | User's email address
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , emailverified :: Boolean --
--- | Whether the user's email has been verified
--- | Example: `true`
-  , id :: String --
--- | Unique identifier for the user
--- | Example: `"2c35b6f3-c4b9-48e3-978a-d4d0f1d42e24"`
--- | Pattern: \b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b
-  , isanonymous :: Boolean --
--- | Whether this is an anonymous user account
--- | Example: `false`
-  , locale :: String --
--- | User's preferred locale (language code)
--- | Example: `"en"`
--- | MinLength: 2
--- | MaxLength: 2
-  , metadata :: Object --
--- | Custom metadata associated with the user
--- | Example: `{"firstName":"John","lastName":"Smith"}`
-  , phonenumber :: Maybe (String) --
--- | User's phone number
--- | Example: `"+12025550123"`
-  , phonenumberverified :: Boolean --
--- | Whether the user's phone number has been verified
--- | Example: `false`
-  , roles :: Array String --
--- | List of roles assigned to the user
--- | Example: `["user","customer"]`
-  , activemfatype :: Maybe (String) --
--- | Active MFA type for the user
+  { avatarurl :: String -- URL to the user's profile picture
+  , createdat :: String -- Timestamp when the user account was created
+  , defaultrole :: String -- Default authorization role for the user
+  , displayname :: String -- User's display name
+  , email :: Maybe String -- User's email address
+  , emailverified :: Boolean -- Whether the user's email has been verified
+  , id :: String -- Unique identifier for the user
+  , isanonymous :: Boolean -- Whether this is an anonymous user account
+  , locale :: String -- User's preferred locale (language code)
+  , metadata :: J.JObject -- Custom metadata associated with the user
+  , phonenumber :: Maybe String -- User's phone number
+  , phonenumberverified :: Boolean -- Whether the user's phone number has been verified
+  , roles :: Array String -- List of roles assigned to the user
+  , activemfatype :: Maybe String -- Active MFA type for the user
   }
 
--- JSON instances for User
-instance encodeJsonUser :: EncodeJson User where
-  encodeJson record =
-    "avatarurl" := record.avatarurl
-
-    ~> "createdat" := record.createdat
-
-    ~> "defaultrole" := record.defaultrole
-
-    ~> "displayname" := record.displayname
-
-    ~> "email" := record.email
-
-    ~> "emailverified" := record.emailverified
-
-    ~> "id" := record.id
-
-    ~> "isanonymous" := record.isanonymous
-
-    ~> "locale" := record.locale
-
-    ~> "metadata" := record.metadata
-
-    ~> "phonenumber" := record.phonenumber
-
-    ~> "phonenumberverified" := record.phonenumberverified
-
-    ~> "roles" := record.roles
-
-    ~> "activemfatype" := record.activemfatype
-    ~> jsonEmptyObject
-
-instance decodeJsonUser :: DecodeJson User where
-  decodeJson json = do
-    obj <- decodeJson json
-    avatarurl <- obj .: "avatarurl"
-    createdat <- obj .: "createdat"
-    defaultrole <- obj .: "defaultrole"
-    displayname <- obj .: "displayname"
-    email <- obj .:? "email"
-    emailverified <- obj .: "emailverified"
-    id <- obj .: "id"
-    isanonymous <- obj .: "isanonymous"
-    locale <- obj .: "locale"
-    metadata <- obj .: "metadata"
-    phonenumber <- obj .:? "phonenumber"
-    phonenumberverified <- obj .: "phonenumberverified"
-    roles <- obj .: "roles"
-    activemfatype <- obj .:? "activemfatype"
-    pure { avatarurl, createdat, defaultrole, displayname, email, emailverified, id, isanonymous, locale, metadata, phonenumber, phonenumberverified, roles, activemfatype }
+userCodec :: CJ.Codec User
+userCodec =
+  CJ.object $ CJR.record
+    { avatarurl: CJ.identity CJ.string
+    , createdat: CJ.identity CJ.string
+    , defaultrole: CJ.identity CJ.string
+    , displayname: CJ.identity CJ.string
+    , email: CJR.optional CJ.string
+    , emailverified: CJ.identity CJ.boolean
+    , id: CJ.identity CJ.string
+    , isanonymous: CJ.identity CJ.boolean
+    , locale: CJ.identity CJ.string
+    , metadata: CJ.identity CJ.jobject
+    , phonenumber: CJR.optional CJ.string
+    , phonenumberverified: CJ.identity CJ.boolean
+    , roles: CJ.identity CJ.array CJ.string
+    , activemfatype: CJR.optional CJ.string
+    }
 
 -- | Which sign-in method to use
 data UserDeanonymizeRequestSignInMethod
@@ -2132,167 +1244,91 @@ instance showUserDeanonymizeRequestSignInMethod :: Show UserDeanonymizeRequestSi
 userdeanonymizerequestsigninmethodCodec :: CJ.Codec UserDeanonymizeRequestSignInMethod
 userdeanonymizerequestsigninmethodCodec = CJ.prismaticCodec "UserDeanonymizeRequestSignInMethod" dec enc CJ.string
   where
-    dec = case _ of
-      "EmailPassword" -> Just UserDeanonymizeRequestSignInMethod_EmailPassword
-      "Passwordless" -> Just UserDeanonymizeRequestSignInMethod_Passwordless
-      _ -> Nothing
+  dec = case _ of
+    "EmailPassword" -> Just UserDeanonymizeRequestSignInMethod_EmailPassword
+    "Passwordless" -> Just UserDeanonymizeRequestSignInMethod_Passwordless
+    _ -> Nothing
 
-    enc = case _ of
-      UserDeanonymizeRequestSignInMethod_EmailPassword -> "EmailPassword"
-      UserDeanonymizeRequestSignInMethod_Passwordless -> "Passwordless"
+  enc = case _ of
+    UserDeanonymizeRequestSignInMethod_EmailPassword -> "EmailPassword"
+    UserDeanonymizeRequestSignInMethod_Passwordless -> "Passwordless"
+
 -- |
--- |
--- | * `signinmethod`: `UserDeanonymizeRequestSignInMethod` -
--- | Which sign-in method to use
--- | * `email`: `String` -
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `password` (Optional): `String` -
--- | A password of minimum 3 characters
--- | Example: `"Str0ngPassw#ord-94|%"`
--- | MinLength: 3
--- | MaxLength: 50
--- | * `connection` (Optional): `String` -
--- | Deprecated, will be ignored
--- | * `options` (Optional): `SignUpOptions` -
+-- | * `signinmethod`: `UserDeanonymizeRequestSignInMethod` - Which sign-in method to use
+-- | * `email`: `String` - A valid email
+-- | * `password` (Optional): `Maybe String` - A password of minimum 3 characters
+-- | * `connection` (Optional): `Maybe String` - Deprecated, will be ignored
+-- | * `options` (Optional): `Maybe SignUpOptions`
 type UserDeanonymizeRequest =
-  {signinmethod :: UserDeanonymizeRequestSignInMethod --
--- | Which sign-in method to use
-  , email :: String --
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , password :: Maybe (String) --
--- | A password of minimum 3 characters
--- | Example: `"Str0ngPassw#ord-94|%"`
--- | MinLength: 3
--- | MaxLength: 50
-  , connection :: Maybe (String) --
--- | Deprecated, will be ignored
-  , options :: Maybe (SignUpOptions) --
+  { signinmethod :: UserDeanonymizeRequestSignInMethod -- Which sign-in method to use
+  , email :: String -- A valid email
+  , password :: Maybe String -- A password of minimum 3 characters
+  , connection :: Maybe String -- Deprecated, will be ignored
+  , options :: Maybe SignUpOptions
   }
 
--- JSON instances for UserDeanonymizeRequest
-instance encodeJsonUserDeanonymizeRequest :: EncodeJson UserDeanonymizeRequest where
-  encodeJson record =
-    "signinmethod" := record.signinmethod
+userdeanonymizerequestCodec :: CJ.Codec UserDeanonymizeRequest
+userdeanonymizerequestCodec =
+  CJ.object $ CJR.record
+    { signinmethod: CJ.identity userdeanonymizerequestsigninmethodCodec
+    , email: CJ.identity CJ.string
+    , password: CJR.optional CJ.string
+    , connection: CJR.optional CJ.string
+    , options: CJR.optional signupoptionsCodec
+    }
 
-    ~> "email" := record.email
-
-    ~> "password" := record.password
-
-    ~> "connection" := record.connection
-
-    ~> "options" := record.options
-    ~> jsonEmptyObject
-
-instance decodeJsonUserDeanonymizeRequest :: DecodeJson UserDeanonymizeRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    signinmethod <- obj .: "signinmethod"
-    email <- obj .: "email"
-    password <- obj .:? "password"
-    connection <- obj .:? "connection"
-    options <- obj .:? "options"
-    pure { signinmethod, email, password, connection, options }
 -- |
--- |
--- | * `newemail`: `String` -
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `options` (Optional): `OptionsRedirectTo` -
+-- | * `newemail`: `String` - A valid email
+-- | * `options` (Optional): `Maybe OptionsRedirectTo`
 type UserEmailChangeRequest =
-  {newemail :: String --
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , options :: Maybe (OptionsRedirectTo) --
+  { newemail :: String -- A valid email
+  , options :: Maybe OptionsRedirectTo
   }
 
--- JSON instances for UserEmailChangeRequest
-instance encodeJsonUserEmailChangeRequest :: EncodeJson UserEmailChangeRequest where
-  encodeJson record =
-    "newemail" := record.newemail
+useremailchangerequestCodec :: CJ.Codec UserEmailChangeRequest
+useremailchangerequestCodec =
+  CJ.object $ CJR.record
+    { newemail: CJ.identity CJ.string
+    , options: CJR.optional optionsredirecttoCodec
+    }
 
-    ~> "options" := record.options
-    ~> jsonEmptyObject
-
-instance decodeJsonUserEmailChangeRequest :: DecodeJson UserEmailChangeRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    newemail <- obj .: "newemail"
-    options <- obj .:? "options"
-    pure { newemail, options }
 -- |
--- |
--- | * `email`: `String` -
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `options` (Optional): `OptionsRedirectTo` -
+-- | * `email`: `String` - A valid email
+-- | * `options` (Optional): `Maybe OptionsRedirectTo`
 type UserEmailSendVerificationEmailRequest =
-  {email :: String --
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , options :: Maybe (OptionsRedirectTo) --
+  { email :: String -- A valid email
+  , options :: Maybe OptionsRedirectTo
   }
 
--- JSON instances for UserEmailSendVerificationEmailRequest
-instance encodeJsonUserEmailSendVerificationEmailRequest :: EncodeJson UserEmailSendVerificationEmailRequest where
-  encodeJson record =
-    "email" := record.email
+useremailsendverificationemailrequestCodec :: CJ.Codec UserEmailSendVerificationEmailRequest
+useremailsendverificationemailrequestCodec =
+  CJ.object $ CJR.record
+    { email: CJ.identity CJ.string
+    , options: CJR.optional optionsredirecttoCodec
+    }
 
-    ~> "options" := record.options
-    ~> jsonEmptyObject
-
-instance decodeJsonUserEmailSendVerificationEmailRequest :: DecodeJson UserEmailSendVerificationEmailRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    email <- obj .: "email"
-    options <- obj .:? "options"
-    pure { email, options }
 -- |
--- |
--- | * `name`: `String` -
--- | A human-palatable name for the entity
--- | * `displayname`: `String` -
--- | A human-palatable name for the user account, intended only for display
--- | * `id`: `String` -
--- | The user handle of the user account entity
+-- | * `name`: `String` - A human-palatable name for the entity
+-- | * `displayname`: `String` - A human-palatable name for the user account, intended only for display
+-- | * `id`: `String` - The user handle of the user account entity
 type UserEntity =
-  {name :: String --
--- | A human-palatable name for the entity
-  , displayname :: String --
--- | A human-palatable name for the user account, intended only for display
-  , id :: String --
--- | The user handle of the user account entity
+  { name :: String -- A human-palatable name for the entity
+  , displayname :: String -- A human-palatable name for the user account, intended only for display
+  , id :: String -- The user handle of the user account entity
   }
 
--- JSON instances for UserEntity
-instance encodeJsonUserEntity :: EncodeJson UserEntity where
-  encodeJson record =
-    "name" := record.name
-
-    ~> "displayname" := record.displayname
-
-    ~> "id" := record.id
-    ~> jsonEmptyObject
-
-instance decodeJsonUserEntity :: DecodeJson UserEntity where
-  decodeJson json = do
-    obj <- decodeJson json
-    name <- obj .: "name"
-    displayname <- obj .: "displayname"
-    id <- obj .: "id"
-    pure { name, displayname, id }
+userentityCodec :: CJ.Codec UserEntity
+userentityCodec =
+  CJ.object $ CJR.record
+    { name: CJ.identity CJ.string
+    , displayname: CJ.identity CJ.string
+    , id: CJ.identity CJ.string
+    }
 
 -- | Type of MFA to activate. Use empty string to disable MFA.
 data UserMfaRequestActiveMfaType
   = UserMfaRequestActiveMfaType_Totp
-  | UserMfaRequestActiveMfaType_None
+  | UserMfaRequestActiveMfaType_Empty
 
 derive instance genericUserMfaRequestActiveMfaType :: Generic UserMfaRequestActiveMfaType _
 derive instance eqUserMfaRequestActiveMfaType :: Eq UserMfaRequestActiveMfaType
@@ -2304,109 +1340,60 @@ instance showUserMfaRequestActiveMfaType :: Show UserMfaRequestActiveMfaType whe
 usermfarequestactivemfatypeCodec :: CJ.Codec UserMfaRequestActiveMfaType
 usermfarequestactivemfatypeCodec = CJ.prismaticCodec "UserMfaRequestActiveMfaType" dec enc CJ.string
   where
-    dec = case _ of
-      "Totp" -> Just UserMfaRequestActiveMfaType_Totp
-      "" -> Just UserMfaRequestActiveMfaType_None
-      _ -> Nothing
+  dec = case _ of
+    "Totp" -> Just UserMfaRequestActiveMfaType_Totp
+    "" -> Just UserMfaRequestActiveMfaType_Empty
+    _ -> Nothing
 
-    enc = case _ of
-      UserMfaRequestActiveMfaType_Totp -> "Totp"
-      UserMfaRequestActiveMfaType_None -> ""
+  enc = case _ of
+    UserMfaRequestActiveMfaType_Totp -> "Totp"
+    UserMfaRequestActiveMfaType_Empty -> ""
+
 -- | Request to activate or deactivate multi-factor authentication
 -- |
--- | * `code`: `String` -
--- | Verification code from the authenticator app when activating MFA
--- | Example: `"123456"`
--- | * `activemfatype` (Optional): `UserMfaRequestActiveMfaType` -
--- | Type of MFA to activate. Use empty string to disable MFA.
--- | Example: `"totp"`
+-- | * `code`: `String` - Verification code from the authenticator app when activating MFA
+-- | * `activemfatype` (Optional): `Maybe UserMfaRequestActiveMfaType` - Type of MFA to activate. Use empty string to disable MFA.
 type UserMfaRequest =
-  {code :: String --
--- | Verification code from the authenticator app when activating MFA
--- | Example: `"123456"`
-  , activemfatype :: Maybe (UserMfaRequestActiveMfaType) --
--- | Type of MFA to activate. Use empty string to disable MFA.
--- | Example: `"totp"`
+  { code :: String -- Verification code from the authenticator app when activating MFA
+  , activemfatype :: Maybe UserMfaRequestActiveMfaType -- Type of MFA to activate. Use empty string to disable MFA.
   }
 
--- JSON instances for UserMfaRequest
-instance encodeJsonUserMfaRequest :: EncodeJson UserMfaRequest where
-  encodeJson record =
-    "code" := record.code
+usermfarequestCodec :: CJ.Codec UserMfaRequest
+usermfarequestCodec =
+  CJ.object $ CJR.record
+    { code: CJ.identity CJ.string
+    , activemfatype: CJR.optional usermfarequestactivemfatypeCodec
+    }
 
-    ~> "activemfatype" := record.activemfatype
-    ~> jsonEmptyObject
-
-instance decodeJsonUserMfaRequest :: DecodeJson UserMfaRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    code <- obj .: "code"
-    activemfatype <- obj .:? "activemfatype"
-    pure { code, activemfatype }
 -- |
--- |
--- | * `newpassword`: `String` -
--- | A password of minimum 3 characters
--- | Example: `"Str0ngPassw#ord-94|%"`
--- | MinLength: 3
--- | MaxLength: 50
--- | * `ticket` (Optional): `String` -
--- | Ticket to reset the password, required if the user is not authenticated
--- | Pattern: ^passwordReset\:.*$
+-- | * `newpassword`: `String` - A password of minimum 3 characters
+-- | * `ticket` (Optional): `Maybe String` - Ticket to reset the password, required if the user is not authenticated
 type UserPasswordRequest =
-  {newpassword :: String --
--- | A password of minimum 3 characters
--- | Example: `"Str0ngPassw#ord-94|%"`
--- | MinLength: 3
--- | MaxLength: 50
-  , ticket :: Maybe (String) --
--- | Ticket to reset the password, required if the user is not authenticated
--- | Pattern: ^passwordReset\:.*$
+  { newpassword :: String -- A password of minimum 3 characters
+  , ticket :: Maybe String -- Ticket to reset the password, required if the user is not authenticated
   }
 
--- JSON instances for UserPasswordRequest
-instance encodeJsonUserPasswordRequest :: EncodeJson UserPasswordRequest where
-  encodeJson record =
-    "newpassword" := record.newpassword
+userpasswordrequestCodec :: CJ.Codec UserPasswordRequest
+userpasswordrequestCodec =
+  CJ.object $ CJR.record
+    { newpassword: CJ.identity CJ.string
+    , ticket: CJR.optional CJ.string
+    }
 
-    ~> "ticket" := record.ticket
-    ~> jsonEmptyObject
-
-instance decodeJsonUserPasswordRequest :: DecodeJson UserPasswordRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    newpassword <- obj .: "newpassword"
-    ticket <- obj .:? "ticket"
-    pure { newpassword, ticket }
 -- |
--- |
--- | * `email`: `String` -
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
--- | * `options` (Optional): `OptionsRedirectTo` -
+-- | * `email`: `String` - A valid email
+-- | * `options` (Optional): `Maybe OptionsRedirectTo`
 type UserPasswordResetRequest =
-  {email :: String --
--- | A valid email
--- | Example: `"john.smith@nhost.io"`
--- | Format: email
-  , options :: Maybe (OptionsRedirectTo) --
+  { email :: String -- A valid email
+  , options :: Maybe OptionsRedirectTo
   }
 
--- JSON instances for UserPasswordResetRequest
-instance encodeJsonUserPasswordResetRequest :: EncodeJson UserPasswordResetRequest where
-  encodeJson record =
-    "email" := record.email
-
-    ~> "options" := record.options
-    ~> jsonEmptyObject
-
-instance decodeJsonUserPasswordResetRequest :: DecodeJson UserPasswordResetRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    email <- obj .: "email"
-    options <- obj .:? "options"
-    pure { email, options }
+userpasswordresetrequestCodec :: CJ.Codec UserPasswordResetRequest
+userpasswordresetrequestCodec =
+  CJ.object $ CJR.record
+    { email: CJ.identity CJ.string
+    , options: CJR.optional optionsredirecttoCodec
+    }
 
 -- | A requirement for user verification for the operation
 data UserVerificationRequirement
@@ -2424,90 +1411,58 @@ instance showUserVerificationRequirement :: Show UserVerificationRequirement whe
 userverificationrequirementCodec :: CJ.Codec UserVerificationRequirement
 userverificationrequirementCodec = CJ.prismaticCodec "UserVerificationRequirement" dec enc CJ.string
   where
-    dec = case _ of
-      "Required" -> Just UserVerificationRequirement_Required
-      "Preferred" -> Just UserVerificationRequirement_Preferred
-      "Discouraged" -> Just UserVerificationRequirement_Discouraged
-      _ -> Nothing
+  dec = case _ of
+    "Required" -> Just UserVerificationRequirement_Required
+    "Preferred" -> Just UserVerificationRequirement_Preferred
+    "Discouraged" -> Just UserVerificationRequirement_Discouraged
+    _ -> Nothing
 
-    enc = case _ of
-      UserVerificationRequirement_Required -> "Required"
-      UserVerificationRequirement_Preferred -> "Preferred"
-      UserVerificationRequirement_Discouraged -> "Discouraged"
+  enc = case _ of
+    UserVerificationRequirement_Required -> "Required"
+    UserVerificationRequirement_Preferred -> "Preferred"
+    UserVerificationRequirement_Discouraged -> "Discouraged"
+
 -- |
--- |
--- | * `credential`: `CredentialCreationResponse` -
--- | * `nickname` (Optional): `String` -
--- | Optional nickname for the security key
+-- | * `credential`: `CredentialCreationResponse`
+-- | * `nickname` (Optional): `Maybe String` - Optional nickname for the security key
 type VerifyAddSecurityKeyRequest =
-  {credential :: CredentialCreationResponse --
-  , nickname :: Maybe (String) --
--- | Optional nickname for the security key
+  { credential :: CredentialCreationResponse
+  , nickname :: Maybe String -- Optional nickname for the security key
   }
 
--- JSON instances for VerifyAddSecurityKeyRequest
-instance encodeJsonVerifyAddSecurityKeyRequest :: EncodeJson VerifyAddSecurityKeyRequest where
-  encodeJson record =
-    "credential" := record.credential
+verifyaddsecuritykeyrequestCodec :: CJ.Codec VerifyAddSecurityKeyRequest
+verifyaddsecuritykeyrequestCodec =
+  CJ.object $ CJR.record
+    { credential: CJ.identity credentialcreationresponseCodec
+    , nickname: CJR.optional CJ.string
+    }
 
-    ~> "nickname" := record.nickname
-    ~> jsonEmptyObject
-
-instance decodeJsonVerifyAddSecurityKeyRequest :: DecodeJson VerifyAddSecurityKeyRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    credential <- obj .: "credential"
-    nickname <- obj .:? "nickname"
-    pure { credential, nickname }
 -- |
--- |
--- | * `id`: `String` -
--- | The ID of the newly added security key
--- | Example: `"123e4567-e89b-12d3-a456-426614174000"`
--- | * `nickname` (Optional): `String` -
--- | The nickname of the security key if provided
+-- | * `id`: `String` - The ID of the newly added security key
+-- | * `nickname` (Optional): `Maybe String` - The nickname of the security key if provided
 type VerifyAddSecurityKeyResponse =
-  {id :: String --
--- | The ID of the newly added security key
--- | Example: `"123e4567-e89b-12d3-a456-426614174000"`
-  , nickname :: Maybe (String) --
--- | The nickname of the security key if provided
+  { id :: String -- The ID of the newly added security key
+  , nickname :: Maybe String -- The nickname of the security key if provided
   }
 
--- JSON instances for VerifyAddSecurityKeyResponse
-instance encodeJsonVerifyAddSecurityKeyResponse :: EncodeJson VerifyAddSecurityKeyResponse where
-  encodeJson record =
-    "id" := record.id
+verifyaddsecuritykeyresponseCodec :: CJ.Codec VerifyAddSecurityKeyResponse
+verifyaddsecuritykeyresponseCodec =
+  CJ.object $ CJR.record
+    { id: CJ.identity CJ.string
+    , nickname: CJR.optional CJ.string
+    }
 
-    ~> "nickname" := record.nickname
-    ~> jsonEmptyObject
-
-instance decodeJsonVerifyAddSecurityKeyResponse :: DecodeJson VerifyAddSecurityKeyResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    id <- obj .: "id"
-    nickname <- obj .:? "nickname"
-    pure { id, nickname }
 -- |
--- |
--- | * `token` (Optional): `String` -
--- | JWT token to verify
+-- | * `token` (Optional): `Maybe String` - JWT token to verify
 type VerifyTokenRequest =
-  {token :: Maybe (String) --
--- | JWT token to verify
+  { token :: Maybe String -- JWT token to verify
   }
 
--- JSON instances for VerifyTokenRequest
-instance encodeJsonVerifyTokenRequest :: EncodeJson VerifyTokenRequest where
-  encodeJson record =
-    "token" := record.token
-    ~> jsonEmptyObject
-
-instance decodeJsonVerifyTokenRequest :: DecodeJson VerifyTokenRequest where
-  decodeJson json = do
-    obj <- decodeJson json
-    token <- obj .:? "token"
-    pure { token }
+verifytokenrequestCodec :: CJ.Codec VerifyTokenRequest
+verifytokenrequestCodec =
+  CJ.object $ CJR.record
+    { token: CJR.optional CJ.string
+    }
 
 -- | Target URL for the redirect
 type RedirectToQuery = String
@@ -2542,40 +1497,40 @@ instance showSignInProvider :: Show SignInProvider where
 signinproviderCodec :: CJ.Codec SignInProvider
 signinproviderCodec = CJ.prismaticCodec "SignInProvider" dec enc CJ.string
   where
-    dec = case _ of
-      "Apple" -> Just SignInProvider_Apple
-      "Github" -> Just SignInProvider_Github
-      "Google" -> Just SignInProvider_Google
-      "Linkedin" -> Just SignInProvider_Linkedin
-      "Discord" -> Just SignInProvider_Discord
-      "Spotify" -> Just SignInProvider_Spotify
-      "Twitch" -> Just SignInProvider_Twitch
-      "Gitlab" -> Just SignInProvider_Gitlab
-      "Bitbucket" -> Just SignInProvider_Bitbucket
-      "Workos" -> Just SignInProvider_Workos
-      "Azuread" -> Just SignInProvider_Azuread
-      "Strava" -> Just SignInProvider_Strava
-      "Facebook" -> Just SignInProvider_Facebook
-      "Windowslive" -> Just SignInProvider_Windowslive
-      "Twitter" -> Just SignInProvider_Twitter
-      _ -> Nothing
+  dec = case _ of
+    "Apple" -> Just SignInProvider_Apple
+    "Github" -> Just SignInProvider_Github
+    "Google" -> Just SignInProvider_Google
+    "Linkedin" -> Just SignInProvider_Linkedin
+    "Discord" -> Just SignInProvider_Discord
+    "Spotify" -> Just SignInProvider_Spotify
+    "Twitch" -> Just SignInProvider_Twitch
+    "Gitlab" -> Just SignInProvider_Gitlab
+    "Bitbucket" -> Just SignInProvider_Bitbucket
+    "Workos" -> Just SignInProvider_Workos
+    "Azuread" -> Just SignInProvider_Azuread
+    "Strava" -> Just SignInProvider_Strava
+    "Facebook" -> Just SignInProvider_Facebook
+    "Windowslive" -> Just SignInProvider_Windowslive
+    "Twitter" -> Just SignInProvider_Twitter
+    _ -> Nothing
 
-    enc = case _ of
-      SignInProvider_Apple -> "Apple"
-      SignInProvider_Github -> "Github"
-      SignInProvider_Google -> "Google"
-      SignInProvider_Linkedin -> "Linkedin"
-      SignInProvider_Discord -> "Discord"
-      SignInProvider_Spotify -> "Spotify"
-      SignInProvider_Twitch -> "Twitch"
-      SignInProvider_Gitlab -> "Gitlab"
-      SignInProvider_Bitbucket -> "Bitbucket"
-      SignInProvider_Workos -> "Workos"
-      SignInProvider_Azuread -> "Azuread"
-      SignInProvider_Strava -> "Strava"
-      SignInProvider_Facebook -> "Facebook"
-      SignInProvider_Windowslive -> "Windowslive"
-      SignInProvider_Twitter -> "Twitter"
+  enc = case _ of
+    SignInProvider_Apple -> "Apple"
+    SignInProvider_Github -> "Github"
+    SignInProvider_Google -> "Google"
+    SignInProvider_Linkedin -> "Linkedin"
+    SignInProvider_Discord -> "Discord"
+    SignInProvider_Spotify -> "Spotify"
+    SignInProvider_Twitch -> "Twitch"
+    SignInProvider_Gitlab -> "Gitlab"
+    SignInProvider_Bitbucket -> "Bitbucket"
+    SignInProvider_Workos -> "Workos"
+    SignInProvider_Azuread -> "Azuread"
+    SignInProvider_Strava -> "Strava"
+    SignInProvider_Facebook -> "Facebook"
+    SignInProvider_Windowslive -> "Windowslive"
+    SignInProvider_Twitter -> "Twitter"
 
 -- | Ticket
 type TicketQuery = String
@@ -2600,47 +1555,38 @@ instance showTicketTypeQuery :: Show TicketTypeQuery where
 tickettypequeryCodec :: CJ.Codec TicketTypeQuery
 tickettypequeryCodec = CJ.prismaticCodec "TicketTypeQuery" dec enc CJ.string
   where
-    dec = case _ of
-      "EmailVerify" -> Just TicketTypeQuery_EmailVerify
-      "EmailConfirmChange" -> Just TicketTypeQuery_EmailConfirmChange
-      "SigninPasswordless" -> Just TicketTypeQuery_SigninPasswordless
-      "PasswordReset" -> Just TicketTypeQuery_PasswordReset
-      _ -> Nothing
+  dec = case _ of
+    "EmailVerify" -> Just TicketTypeQuery_EmailVerify
+    "EmailConfirmChange" -> Just TicketTypeQuery_EmailConfirmChange
+    "SigninPasswordless" -> Just TicketTypeQuery_SigninPasswordless
+    "PasswordReset" -> Just TicketTypeQuery_PasswordReset
+    _ -> Nothing
 
-    enc = case _ of
-      TicketTypeQuery_EmailVerify -> "EmailVerify"
-      TicketTypeQuery_EmailConfirmChange -> "EmailConfirmChange"
-      TicketTypeQuery_SigninPasswordless -> "SigninPasswordless"
-      TicketTypeQuery_PasswordReset -> "PasswordReset"
+  enc = case _ of
+    TicketTypeQuery_EmailVerify -> "EmailVerify"
+    TicketTypeQuery_EmailConfirmChange -> "EmailConfirmChange"
+    TicketTypeQuery_SigninPasswordless -> "SigninPasswordless"
+    TicketTypeQuery_PasswordReset -> "PasswordReset"
+
 -- |
--- |
--- | * `version`: `String` -
--- | The version of the authentication service
--- | Example: `"1.2.3"`
+-- | * `version`: `String` - The version of the authentication service
 type GetVersionResponse200 =
-  {version :: String --
--- | The version of the authentication service
--- | Example: `"1.2.3"`
+  { version :: String -- The version of the authentication service
   }
 
--- JSON instances for GetVersionResponse200
-instance encodeJsonGetVersionResponse200 :: EncodeJson GetVersionResponse200 where
-  encodeJson record =
-    "version" := record.version
-    ~> jsonEmptyObject
+getversionresponse200Codec :: CJ.Codec GetVersionResponse200
+getversionresponse200Codec =
+  CJ.object $ CJR.record
+    { version: CJ.identity CJ.string
+    }
 
-instance decodeJsonGetVersionResponse200 :: DecodeJson GetVersionResponse200 where
-  decodeJson json = do
-    obj <- decodeJson json
-    version <- obj .: "version"
-    pure { version }
 -- | Parameters for the SignInProvider method.
 type SignInProviderParams =
-  {allowedroles :: Maybe (Array String) -- Array of allowed roles for the user
+  { allowedroles :: Maybe (Array String) -- Array of allowed roles for the user
   , defaultrole :: Maybe String -- Default role for the user
   , displayname :: Maybe String -- Display name for the user
   , locale :: Maybe String -- A two-characters locale
-  , metadata :: Maybe Object -- Additional metadata for the user (JSON encoded string)
+  , metadata :: Maybe J.JObject -- Additional metadata for the user (JSON encoded string)
   , redirectto :: Maybe String -- URI to redirect to
   , connect :: Maybe String -- If set, this means that the user is already authenticated and wants to link their account. This needs to be a valid JWT access token.
   }
@@ -2648,17 +1594,18 @@ type SignInProviderParams =
 signinproviderParamsCodec :: CJ.Codec SignInProviderParams
 signinproviderParamsCodec =
   CJ.object $ CJR.record
-    {allowedroles: CJ.maybe CJ.array CJ.string
+    { allowedroles: CJ.maybe CJ.array CJ.string
     , defaultrole: CJ.maybe CJ.string
     , displayname: CJ.maybe CJ.string
     , locale: CJ.maybe CJ.string
-    , metadata: CJ.maybe objectCodec
+    , metadata: CJ.maybe CJ.jobject
     , redirectto: CJ.maybe CJ.string
     , connect: CJ.maybe CJ.string
     }
+
 -- | Parameters for the VerifyTicket method.
 type VerifyTicketParams =
-  {ticket :: TicketQuery -- Ticket
+  { ticket :: TicketQuery -- Ticket
   , type_ :: Maybe TicketTypeQuery -- Type of the ticket. Deprecated, no longer used
   , redirectto :: RedirectToQuery -- Target URL for the redirect
   }
@@ -2666,47 +1613,49 @@ type VerifyTicketParams =
 verifyticketParamsCodec :: CJ.Codec VerifyTicketParams
 verifyticketParamsCodec =
   CJ.object $ CJR.record
-    {ticket: ticketqueryCodec
+    { ticket: ticketqueryCodec
     , type_: CJ.maybe tickettypequeryCodec
     , redirectto: redirecttoqueryCodec
     }
 
 -- | API Client type
-type getJWKsFn :: Aff (FetchResponse JWKSet)
-type elevateWebauthnFn :: Aff (FetchResponse PublicKeyCredentialRequestOptions)
-type verifyElevateWebauthnFn :: SignInWebauthnVerifyRequest -> Aff (FetchResponse SessionPayload)
-type healthCheckGetFn :: Aff (FetchResponse OKResponse)
-type healthCheckHeadFn :: Aff (FetchResponse void)
-type linkIdTokenFn :: LinkIdTokenRequest -> Aff (FetchResponse OKResponse)
-type changeUserMfaFn :: Aff (FetchResponse TotpGenerateResponse)
-type createPATFn :: CreatePATRequest -> Aff (FetchResponse CreatePATResponse)
-type signInAnonymousFn :: Maybe (SignInAnonymousRequest) -> Aff (FetchResponse SessionPayload)
-type signInEmailPasswordFn :: SignInEmailPasswordRequest -> Aff (FetchResponse SignInEmailPasswordResponse)
-type signInIdTokenFn :: SignInIdTokenRequest -> Aff (FetchResponse SessionPayload)
-type verifySignInMfaTotpFn :: SignInMfaTotpRequest -> Aff (FetchResponse SessionPayload)
-type signInOTPEmailFn :: SignInOTPEmailRequest -> Aff (FetchResponse OKResponse)
-type verifySignInOTPEmailFn :: SignInOTPEmailVerifyRequest -> Aff (FetchResponse SignInOTPEmailVerifyResponse)
-type signInPasswordlessEmailFn :: SignInPasswordlessEmailRequest -> Aff (FetchResponse OKResponse)
-type signInPasswordlessSmsFn :: SignInPasswordlessSmsRequest -> Aff (FetchResponse OKResponse)
-type verifySignInPasswordlessSmsFn :: SignInPasswordlessSmsOtpRequest -> Aff (FetchResponse SignInPasswordlessSmsOtpResponse)
-type signInPATFn :: SignInPATRequest -> Aff (FetchResponse SessionPayload)
-type signInProviderFn :: SignInProvider -> Maybe SignInProviderParams -> Aff (FetchResponse )
-type signInWebauthnFn :: Maybe (SignInWebauthnRequest) -> Aff (FetchResponse PublicKeyCredentialRequestOptions)
-type verifySignInWebauthnFn :: SignInWebauthnVerifyRequest -> Aff (FetchResponse SessionPayload)
-type signOutFn :: SignOutRequest -> Aff (FetchResponse OKResponse)
-type signUpEmailPasswordFn :: SignUpEmailPasswordRequest -> Aff (FetchResponse SessionPayload)
-type signUpWebauthnFn :: SignUpWebauthnRequest -> Aff (FetchResponse PublicKeyCredentialCreationOptions)
-type verifySignUpWebauthnFn :: SignUpWebauthnVerifyRequest -> Aff (FetchResponse SessionPayload)
-type refreshTokenFn :: RefreshTokenRequest -> Aff (FetchResponse Session)
-type verifyTokenFn :: Maybe (VerifyTokenRequest) -> Aff (FetchResponse String)
-type getUserFn :: Aff (FetchResponse User)
-type deanonymizeUserFn :: UserDeanonymizeRequest -> Aff (FetchResponse OKResponse)
-type changeUserEmailFn :: UserEmailChangeRequest -> Aff (FetchResponse OKResponse)
-type sendVerificationEmailFn :: UserEmailSendVerificationEmailRequest -> Aff (FetchResponse OKResponse)
-type verifyChangeUserMfaFn :: UserMfaRequest -> Aff (FetchResponse OKResponse)
-type changeUserPasswordFn :: UserPasswordRequest -> Aff (FetchResponse OKResponse)
-type sendPasswordResetEmailFn :: UserPasswordResetRequest -> Aff (FetchResponse OKResponse)
-type addSecurityKeyFn :: Aff (FetchResponse PublicKeyCredentialCreationOptions)
-type verifyAddSecurityKeyFn :: VerifyAddSecurityKeyRequest -> Aff (FetchResponse VerifyAddSecurityKeyResponse)
-type verifyTicketFn :: Maybe VerifyTicketParams -> Aff (FetchResponse )
-type getVersionFn :: Aff (FetchResponse GetVersionResponse200)
+type APIClient fetchResponse =
+  { getJWKs :: Aff (fetchResponse JWKSet)
+  , elevateWebauthn :: Aff (fetchResponse PublicKeyCredentialRequestOptions)
+  , verifyElevateWebauthn :: SignInWebauthnVerifyRequest -> Aff (fetchResponse SessionPayload)
+  , healthCheckGet :: Aff (fetchResponse OKResponse)
+  , healthCheckHead :: Aff (fetchResponse Unit)
+  , linkIdToken :: LinkIdTokenRequest -> Aff (fetchResponse OKResponse)
+  , changeUserMfa :: Aff (fetchResponse TotpGenerateResponse)
+  , createPAT :: CreatePATRequest -> Aff (fetchResponse CreatePATResponse)
+  , signInAnonymous :: Maybe SignInAnonymousRequest -> Aff (fetchResponse SessionPayload)
+  , signInEmailPassword :: SignInEmailPasswordRequest -> Aff (fetchResponse SignInEmailPasswordResponse)
+  , signInIdToken :: SignInIdTokenRequest -> Aff (fetchResponse SessionPayload)
+  , verifySignInMfaTotp :: SignInMfaTotpRequest -> Aff (fetchResponse SessionPayload)
+  , signInOTPEmail :: SignInOTPEmailRequest -> Aff (fetchResponse OKResponse)
+  , verifySignInOTPEmail :: SignInOTPEmailVerifyRequest -> Aff (fetchResponse SignInOTPEmailVerifyResponse)
+  , signInPasswordlessEmail :: SignInPasswordlessEmailRequest -> Aff (fetchResponse OKResponse)
+  , signInPasswordlessSms :: SignInPasswordlessSmsRequest -> Aff (fetchResponse OKResponse)
+  , verifySignInPasswordlessSms :: SignInPasswordlessSmsOtpRequest -> Aff (fetchResponse SignInPasswordlessSmsOtpResponse)
+  , signInPAT :: SignInPATRequest -> Aff (fetchResponse SessionPayload)
+  , signInProvider :: SignInProvider -> Maybe SignInProviderParams -> Aff (fetchResponse)
+  , signInWebauthn :: Maybe SignInWebauthnRequest -> Aff (fetchResponse PublicKeyCredentialRequestOptions)
+  , verifySignInWebauthn :: SignInWebauthnVerifyRequest -> Aff (fetchResponse SessionPayload)
+  , signOut :: SignOutRequest -> Aff (fetchResponse OKResponse)
+  , signUpEmailPassword :: SignUpEmailPasswordRequest -> Aff (fetchResponse SessionPayload)
+  , signUpWebauthn :: SignUpWebauthnRequest -> Aff (fetchResponse PublicKeyCredentialCreationOptions)
+  , verifySignUpWebauthn :: SignUpWebauthnVerifyRequest -> Aff (fetchResponse SessionPayload)
+  , refreshToken :: RefreshTokenRequest -> Aff (fetchResponse Session)
+  , verifyToken :: Maybe VerifyTokenRequest -> Aff (fetchResponse String)
+  , getUser :: Aff (fetchResponse User)
+  , deanonymizeUser :: UserDeanonymizeRequest -> Aff (fetchResponse OKResponse)
+  , changeUserEmail :: UserEmailChangeRequest -> Aff (fetchResponse OKResponse)
+  , sendVerificationEmail :: UserEmailSendVerificationEmailRequest -> Aff (fetchResponse OKResponse)
+  , verifyChangeUserMfa :: UserMfaRequest -> Aff (fetchResponse OKResponse)
+  , changeUserPassword :: UserPasswordRequest -> Aff (fetchResponse OKResponse)
+  , sendPasswordResetEmail :: UserPasswordResetRequest -> Aff (fetchResponse OKResponse)
+  , addSecurityKey :: Aff (fetchResponse PublicKeyCredentialCreationOptions)
+  , verifyAddSecurityKey :: VerifyAddSecurityKeyRequest -> Aff (fetchResponse VerifyAddSecurityKeyResponse)
+  , verifyTicket :: Maybe VerifyTicketParams -> Aff (fetchResponse)
+  , getVersion :: Aff (fetchResponse GetVersionResponse200)
+  }

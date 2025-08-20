@@ -29,57 +29,103 @@
 {{- end -}}
 
 {{- define "renderObject" -}}
+{{- $type := . }}
+{{- if hasValidDescription .Schema.Schema.Description }}
 -- | {{ .Schema.Schema.Description }}
+{{- end }}
+{{- if gt (len .Properties) 0 }}
 -- |
 {{- range .Properties }}
--- | * `{{ recordFieldName .Name }}`{{ if not .Required }} (Optional){{ end }}: `{{ .Type.Name }}` - {{ template "renderObjectComment" .Type }}
+-- | * `{{ recordFieldName .Name }}`{{ if not .Required }} (Optional){{ end }}: `{{ if not .Required }}Maybe {{ if needsParentheses .Type.Name }}({{ .Type.Name }}){{ else }}{{ .Type.Name }}{{ end }}{{ else }}{{ .Type.Name }}{{ end }}`{{ if hasValidDescription .Type.Schema.Schema.Description }} - {{ .Type.Schema.Schema.Description }}{{ end }}
+{{- end }}
 {{- end }}
 type {{ .Name }} =
   { {{- range $i, $prop := .Properties }}{{ if ne $i 0 }}
-  , {{ end }}{{ recordFieldName .Name }} :: {{ if not .Required }}Maybe ({{ end }}{{ .Type.Name }}{{ if not .Required }}){{ end }} -- {{ template "renderObjectComment" .Type }}
+  , {{ end }}{{ recordFieldName .Name }} :: {{ if not .Required }}Maybe {{ if needsParentheses .Type.Name }}({{ .Type.Name }}){{ else }}{{ .Type.Name }}{{ end }}{{ else }}{{ .Type.Name }}{{ end }}{{ if hasValidDescription .Type.Schema.Schema.Description }} -- {{ .Type.Schema.Schema.Description }}{{ end }}
   {{- end }}
   }
 
--- JSON instances for {{ .Name }}
-instance encodeJson{{ .Name }} :: EncodeJson {{ .Name }} where
-  encodeJson record =
-{{- range $i, $prop := .Properties }}
-    {{ if eq $i 0 }}"{{ .Name }}" := record.{{ recordFieldName .Name }}{{ else }}
-    ~> "{{ .Name }}" := record.{{ recordFieldName .Name }}{{ end }}
-{{- end }}
-    ~> jsonEmptyObject
-
-instance decodeJson{{ .Name }} :: DecodeJson {{ .Name }} where
-  decodeJson json = do
-    obj <- decodeJson json
-{{- range .Properties }}
-    {{ recordFieldName .Name }} <- obj {{ if .Required }}.:{{ else }}.:?{{ end }} "{{ .Name }}"
-{{- end }}
-    pure { {{ range $i, $prop := .Properties }}{{ if ne $i 0 }}, {{ end }}{{ recordFieldName .Name }}{{ end }} }
-
+{{ recordFieldName .Name }}Codec :: CJ.Codec {{ .Name }}
+{{ recordFieldName .Name }}Codec =
+  CJ.object $ CJR.record
+    { {{- range $i, $prop := .Properties }}{{ if ne $i 0 }}
+    , {{ end }}{{ recordFieldName .Name }}: {{ if not .Required }}CJR.optional {{ else }}CJ.identity {{ end }}{{ template "codecForType" .Type }}
+    {{- end }}
+    }
 {{- end }}
 
-{{- define "methodSignature" -}}
-{{- range .PathParameters }}{{ .Type.Name }} -> {{ end -}}
-{{- range $code, $type := .Bodies }}{{ if not $.BodyRequired }}Maybe ({{ end }}{{ $type.Name }}{{ if not $.BodyRequired }}){{ end }} -> {{ end -}}
-{{- if .HasQueryParameters }}Maybe {{ typeName .Name }}Params -> {{ end -}}
-Aff (FetchResponse {{ .ReturnType }})
-{{- end -}}
+{{- define "renderEnum" -}}
+{{- $type := . }}
+{{- if hasValidDescription .Schema.Schema.Description }}
+-- | {{ .Schema.Schema.Description }}
+{{- end }}
+data {{ $type.Name }}
+{{- range $i, $value := $type.Values }}
+  {{- if eq $i 0 }}
+  = {{ if eq $value "" }}{{ $type.Name }}_Empty{{ else }}{{ $type.Name }}_{{ enumValueToConstructor $value }}{{ end }}
+  {{- else }}
+  | {{ if eq $value "" }}{{ $type.Name }}_Empty{{ else }}{{ $type.Name }}_{{ enumValueToConstructor $value }}{{ end }}
+  {{- end }}
+{{- end }}
 
-{{- define "methodImplementation" -}}
-\{{ range .PathParameters }}{{ lowerFirst .Name }} {{ end -}}
-{{- range $code, $type := .Bodies }}body {{ end -}}
-{{- if .HasQueryParameters }}params {{ end -}}-> do
-  -- Method implementation would go here
-  -- This is a placeholder
-  pure { body: unit, status: 200, headers: [] }
-{{- end -}}
+derive instance generic{{ .Name }} :: Generic {{ .Name }} _
+derive instance eq{{ .Name }} :: Eq {{ .Name }}
+derive instance ord{{ .Name }} :: Ord {{ .Name }}
 
-{{- define "safeFieldName" -}}
-{{- $name := .Name -}}
-{{- if or (eq $name "type") (eq $name "module") (eq $name "case") (eq $name "class") (eq $name "data") -}}
-{{ $name }}_  {{/* append underscore */}}
+instance show{{ .Name }} :: Show {{ .Name }} where
+  show = genericShow
+
+{{ recordFieldName .Name }}Codec :: CJ.Codec {{ .Name }}
+{{ recordFieldName .Name }}Codec = CJ.prismaticCodec "{{ .Name }}" dec enc CJ.string
+  where
+    dec = case _ of
+{{- range $value := .Values }}
+      {{- if eq $value "" }}
+      "" -> Just {{ $type.Name }}_Empty
+      {{- else }}
+      {{ enumValueToJsonString $value }} -> Just {{ $type.Name }}_{{ enumValueToConstructor $value }}
+      {{- end }}
+{{- end }}
+      _ -> Nothing
+
+    enc = case _ of
+{{- range $value := .Values }}
+      {{- if eq $value "" }}
+      {{ $type.Name }}_Empty -> ""
+      {{- else }}
+      {{ $type.Name }}_{{ enumValueToConstructor $value }} -> {{ enumValueToJsonString $value }}
+      {{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "renderAlias" -}}
+{{- if hasValidDescription .Alias.Schema.Schema.Description }}
+-- | {{ .Alias.Schema.Schema.Description }}
+{{- end }}
+type {{ .Name }} = {{ .Alias.Name }}
+
+{{ recordFieldName .Name }}Codec :: CJ.Codec {{ .Name }}
+{{ recordFieldName .Name }}Codec = {{ template "codecForType" .Alias }}
+{{- end }}
+
+{{- define "codecForType" -}}
+{{- if eq .Name "String" -}}
+CJ.string
+{{- else if eq .Name "Int" -}}
+CJ.int
+{{- else if eq .Name "Number" -}}
+CJ.number
+{{- else if eq .Name "Boolean" -}}
+CJ.boolean
+{{- else if eq .Name "Blob" -}}
+CJ.string  -- Blob as base64 string
+{{- else if hasPrefix .Name "Array " -}}
+CJ.array {{ template "codecForType" .Item }}
+{{- else if eq .Name "Unit" -}}
+CJ.null
+{{- else if eq .Name "J.JObject" -}}
+CJ.jobject
 {{- else -}}
-{{ recordFieldName $name }}
+{{ recordFieldName .Name }}Codec
 {{- end -}}
-{{- end -}}
+{{- end }}

@@ -24,402 +24,196 @@ type RFC2822Date = String
 
 rfc2822dateCodec :: CJ.Codec RFC2822Date
 rfc2822dateCodec = CJ.string
+
 -- | Error details.
 -- |
--- | * `message`: `String` -
--- | Human-readable error message.
--- | Example: `"File not found"`
--- | * `data_` (Optional): `Object` -
--- | Additional data related to the error, if any.
+-- | * `message`: `String` - Human-readable error message.
+-- | * `data_` (Optional): `Maybe J.JObject` - Additional data related to the error, if any.
 type ErrorResponseError =
-  {message :: String --
--- | Human-readable error message.
--- | Example: `"File not found"`
-  , data_ :: Maybe (Object) --
--- | Additional data related to the error, if any.
+  { message :: String -- Human-readable error message.
+  , data_ :: Maybe J.JObject -- Additional data related to the error, if any.
   }
 
--- JSON instances for ErrorResponseError
-instance encodeJsonErrorResponseError :: EncodeJson ErrorResponseError where
-  encodeJson record =
-    "message" := record.message
+errorresponseerrorCodec :: CJ.Codec ErrorResponseError
+errorresponseerrorCodec =
+  CJ.object $ CJR.record
+    { message: CJ.identity CJ.string
+    , data_: CJR.optional CJ.jobject
+    }
 
-    ~> "data_" := record.data_
-    ~> jsonEmptyObject
-
-instance decodeJsonErrorResponseError :: DecodeJson ErrorResponseError where
-  decodeJson json = do
-    obj <- decodeJson json
-    message <- obj .: "message"
-    data_ <- obj .:? "data_"
-    pure { message, data_ }
 -- | Error information returned by the API.
 -- |
--- | * `error` (Optional): `ErrorResponseError` -
--- | Error details.
+-- | * `error` (Optional): `Maybe ErrorResponseError` - Error details.
 type ErrorResponse =
-  {error :: Maybe (ErrorResponseError) --
--- | Error details.
+  { error :: Maybe ErrorResponseError -- Error details.
   }
 
--- JSON instances for ErrorResponse
-instance encodeJsonErrorResponse :: EncodeJson ErrorResponse where
-  encodeJson record =
-    "error" := record.error
-    ~> jsonEmptyObject
+errorresponseCodec :: CJ.Codec ErrorResponse
+errorresponseCodec =
+  CJ.object $ CJR.record
+    { error: CJR.optional errorresponseerrorCodec
+    }
 
-instance decodeJsonErrorResponse :: DecodeJson ErrorResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    error <- obj .:? "error"
-    pure { error }
 -- | Error details.
 -- |
--- | * `message`: `String` -
--- | Human-readable error message.
--- | Example: `"File not found"`
--- | * `data_` (Optional): `Object` -
--- | Additional data related to the error, if any.
+-- | * `message`: `String` - Human-readable error message.
+-- | * `data_` (Optional): `Maybe J.JObject` - Additional data related to the error, if any.
 type ErrorResponseWithProcessedFilesError =
-  {message :: String --
--- | Human-readable error message.
--- | Example: `"File not found"`
-  , data_ :: Maybe (Object) --
--- | Additional data related to the error, if any.
+  { message :: String -- Human-readable error message.
+  , data_ :: Maybe J.JObject -- Additional data related to the error, if any.
   }
 
--- JSON instances for ErrorResponseWithProcessedFilesError
-instance encodeJsonErrorResponseWithProcessedFilesError :: EncodeJson ErrorResponseWithProcessedFilesError where
-  encodeJson record =
-    "message" := record.message
+errorresponsewithprocessedfileserrorCodec :: CJ.Codec ErrorResponseWithProcessedFilesError
+errorresponsewithprocessedfileserrorCodec =
+  CJ.object $ CJR.record
+    { message: CJ.identity CJ.string
+    , data_: CJR.optional CJ.jobject
+    }
 
-    ~> "data_" := record.data_
-    ~> jsonEmptyObject
-
-instance decodeJsonErrorResponseWithProcessedFilesError :: DecodeJson ErrorResponseWithProcessedFilesError where
-  decodeJson json = do
-    obj <- decodeJson json
-    message <- obj .: "message"
-    data_ <- obj .:? "data_"
-    pure { message, data_ }
 -- | Error information returned by the API.
 -- |
--- | * `processedfiles` (Optional): `Array FileMetadata` -
--- | List of files that were successfully processed before the error occurred.
--- | * `error` (Optional): `ErrorResponseWithProcessedFilesError` -
--- | Error details.
+-- | * `processedfiles` (Optional): `Maybe (Array FileMetadata)` - List of files that were successfully processed before the error occurred.
+-- | * `error` (Optional): `Maybe ErrorResponseWithProcessedFilesError` - Error details.
 type ErrorResponseWithProcessedFiles =
-  {processedfiles :: Maybe (Array FileMetadata) --
--- | List of files that were successfully processed before the error occurred.
-  , error :: Maybe (ErrorResponseWithProcessedFilesError) --
--- | Error details.
+  { processedfiles :: Maybe (Array FileMetadata) -- List of files that were successfully processed before the error occurred.
+  , error :: Maybe ErrorResponseWithProcessedFilesError -- Error details.
   }
 
--- JSON instances for ErrorResponseWithProcessedFiles
-instance encodeJsonErrorResponseWithProcessedFiles :: EncodeJson ErrorResponseWithProcessedFiles where
-  encodeJson record =
-    "processedfiles" := record.processedfiles
+errorresponsewithprocessedfilesCodec :: CJ.Codec ErrorResponseWithProcessedFiles
+errorresponsewithprocessedfilesCodec =
+  CJ.object $ CJR.record
+    { processedfiles: CJR.optional CJ.array filemetadataCodec
+    , error: CJR.optional errorresponsewithprocessedfileserrorCodec
+    }
 
-    ~> "error" := record.error
-    ~> jsonEmptyObject
-
-instance decodeJsonErrorResponseWithProcessedFiles :: DecodeJson ErrorResponseWithProcessedFiles where
-  decodeJson json = do
-    obj <- decodeJson json
-    processedfiles <- obj .:? "processedfiles"
-    error <- obj .:? "error"
-    pure { processedfiles, error }
 -- | Comprehensive metadata information about a file in storage.
 -- |
--- | * `id`: `String` -
--- | Unique identifier for the file.
--- | Example: `"d5e76ceb-77a2-4153-b7da-1f7c115b2ff2"`
--- | * `name`: `String` -
--- | Name of the file including extension.
--- | Example: `"profile-picture.jpg"`
--- | * `size`: `Int` -
--- | Size of the file in bytes.
--- | Example: `245678`
--- | Format: int64
--- | * `bucketid`: `String` -
--- | ID of the bucket containing the file.
--- | Example: `"users-bucket"`
--- | * `etag`: `String` -
--- | Entity tag for cache validation.
--- | Example: `"\"a1b2c3d4e5f6\""`
--- | * `createdat`: `String` -
--- | Timestamp when the file was created.
--- | Example: `"2023-01-15T12:34:56Z"`
--- | Format: date-time
--- | * `updatedat`: `String` -
--- | Timestamp when the file was last updated.
--- | Example: `"2023-01-16T09:45:32Z"`
--- | Format: date-time
--- | * `isuploaded`: `Boolean` -
--- | Whether the file has been successfully uploaded.
--- | Example: `true`
--- | * `mimetype`: `String` -
--- | MIME type of the file.
--- | Example: `"image/jpeg"`
--- | * `uploadedbyuserid` (Optional): `String` -
--- | ID of the user who uploaded the file.
--- | Example: `"abc123def456"`
--- | * `metadata` (Optional): `Object` -
--- | Custom metadata associated with the file.
--- | Example: `{"alt":"Profile picture","category":"avatar"}`
+-- | * `id`: `String` - Unique identifier for the file.
+-- | * `name`: `String` - Name of the file including extension.
+-- | * `size`: `Int` - Size of the file in bytes.
+-- | * `bucketid`: `String` - ID of the bucket containing the file.
+-- | * `etag`: `String` - Entity tag for cache validation.
+-- | * `createdat`: `String` - Timestamp when the file was created.
+-- | * `updatedat`: `String` - Timestamp when the file was last updated.
+-- | * `isuploaded`: `Boolean` - Whether the file has been successfully uploaded.
+-- | * `mimetype`: `String` - MIME type of the file.
+-- | * `uploadedbyuserid` (Optional): `Maybe String` - ID of the user who uploaded the file.
+-- | * `metadata` (Optional): `Maybe J.JObject` - Custom metadata associated with the file.
 type FileMetadata =
-  {id :: String --
--- | Unique identifier for the file.
--- | Example: `"d5e76ceb-77a2-4153-b7da-1f7c115b2ff2"`
-  , name :: String --
--- | Name of the file including extension.
--- | Example: `"profile-picture.jpg"`
-  , size :: Int --
--- | Size of the file in bytes.
--- | Example: `245678`
--- | Format: int64
-  , bucketid :: String --
--- | ID of the bucket containing the file.
--- | Example: `"users-bucket"`
-  , etag :: String --
--- | Entity tag for cache validation.
--- | Example: `"\"a1b2c3d4e5f6\""`
-  , createdat :: String --
--- | Timestamp when the file was created.
--- | Example: `"2023-01-15T12:34:56Z"`
--- | Format: date-time
-  , updatedat :: String --
--- | Timestamp when the file was last updated.
--- | Example: `"2023-01-16T09:45:32Z"`
--- | Format: date-time
-  , isuploaded :: Boolean --
--- | Whether the file has been successfully uploaded.
--- | Example: `true`
-  , mimetype :: String --
--- | MIME type of the file.
--- | Example: `"image/jpeg"`
-  , uploadedbyuserid :: Maybe (String) --
--- | ID of the user who uploaded the file.
--- | Example: `"abc123def456"`
-  , metadata :: Maybe (Object) --
--- | Custom metadata associated with the file.
--- | Example: `{"alt":"Profile picture","category":"avatar"}`
+  { id :: String -- Unique identifier for the file.
+  , name :: String -- Name of the file including extension.
+  , size :: Int -- Size of the file in bytes.
+  , bucketid :: String -- ID of the bucket containing the file.
+  , etag :: String -- Entity tag for cache validation.
+  , createdat :: String -- Timestamp when the file was created.
+  , updatedat :: String -- Timestamp when the file was last updated.
+  , isuploaded :: Boolean -- Whether the file has been successfully uploaded.
+  , mimetype :: String -- MIME type of the file.
+  , uploadedbyuserid :: Maybe String -- ID of the user who uploaded the file.
+  , metadata :: Maybe J.JObject -- Custom metadata associated with the file.
   }
 
--- JSON instances for FileMetadata
-instance encodeJsonFileMetadata :: EncodeJson FileMetadata where
-  encodeJson record =
-    "id" := record.id
+filemetadataCodec :: CJ.Codec FileMetadata
+filemetadataCodec =
+  CJ.object $ CJR.record
+    { id: CJ.identity CJ.string
+    , name: CJ.identity CJ.string
+    , size: CJ.identity CJ.int
+    , bucketid: CJ.identity CJ.string
+    , etag: CJ.identity CJ.string
+    , createdat: CJ.identity CJ.string
+    , updatedat: CJ.identity CJ.string
+    , isuploaded: CJ.identity CJ.boolean
+    , mimetype: CJ.identity CJ.string
+    , uploadedbyuserid: CJR.optional CJ.string
+    , metadata: CJR.optional CJ.jobject
+    }
 
-    ~> "name" := record.name
-
-    ~> "size" := record.size
-
-    ~> "bucketid" := record.bucketid
-
-    ~> "etag" := record.etag
-
-    ~> "createdat" := record.createdat
-
-    ~> "updatedat" := record.updatedat
-
-    ~> "isuploaded" := record.isuploaded
-
-    ~> "mimetype" := record.mimetype
-
-    ~> "uploadedbyuserid" := record.uploadedbyuserid
-
-    ~> "metadata" := record.metadata
-    ~> jsonEmptyObject
-
-instance decodeJsonFileMetadata :: DecodeJson FileMetadata where
-  decodeJson json = do
-    obj <- decodeJson json
-    id <- obj .: "id"
-    name <- obj .: "name"
-    size <- obj .: "size"
-    bucketid <- obj .: "bucketid"
-    etag <- obj .: "etag"
-    createdat <- obj .: "createdat"
-    updatedat <- obj .: "updatedat"
-    isuploaded <- obj .: "isuploaded"
-    mimetype <- obj .: "mimetype"
-    uploadedbyuserid <- obj .:? "uploadedbyuserid"
-    metadata <- obj .:? "metadata"
-    pure { id, name, size, bucketid, etag, createdat, updatedat, isuploaded, mimetype, uploadedbyuserid, metadata }
 -- | Basic information about a file in storage.
 -- |
--- | * `id`: `String` -
--- | Unique identifier for the file.
--- | Example: `"d5e76ceb-77a2-4153-b7da-1f7c115b2ff2"`
--- | * `name`: `String` -
--- | Name of the file including extension.
--- | Example: `"profile-picture.jpg"`
--- | * `bucketid`: `String` -
--- | ID of the bucket containing the file.
--- | Example: `"users-bucket"`
--- | * `isuploaded`: `Boolean` -
--- | Whether the file has been successfully uploaded.
--- | Example: `true`
+-- | * `id`: `String` - Unique identifier for the file.
+-- | * `name`: `String` - Name of the file including extension.
+-- | * `bucketid`: `String` - ID of the bucket containing the file.
+-- | * `isuploaded`: `Boolean` - Whether the file has been successfully uploaded.
 type FileSummary =
-  {id :: String --
--- | Unique identifier for the file.
--- | Example: `"d5e76ceb-77a2-4153-b7da-1f7c115b2ff2"`
-  , name :: String --
--- | Name of the file including extension.
--- | Example: `"profile-picture.jpg"`
-  , bucketid :: String --
--- | ID of the bucket containing the file.
--- | Example: `"users-bucket"`
-  , isuploaded :: Boolean --
--- | Whether the file has been successfully uploaded.
--- | Example: `true`
+  { id :: String -- Unique identifier for the file.
+  , name :: String -- Name of the file including extension.
+  , bucketid :: String -- ID of the bucket containing the file.
+  , isuploaded :: Boolean -- Whether the file has been successfully uploaded.
   }
 
--- JSON instances for FileSummary
-instance encodeJsonFileSummary :: EncodeJson FileSummary where
-  encodeJson record =
-    "id" := record.id
+filesummaryCodec :: CJ.Codec FileSummary
+filesummaryCodec =
+  CJ.object $ CJR.record
+    { id: CJ.identity CJ.string
+    , name: CJ.identity CJ.string
+    , bucketid: CJ.identity CJ.string
+    , isuploaded: CJ.identity CJ.boolean
+    }
 
-    ~> "name" := record.name
-
-    ~> "bucketid" := record.bucketid
-
-    ~> "isuploaded" := record.isuploaded
-    ~> jsonEmptyObject
-
-instance decodeJsonFileSummary :: DecodeJson FileSummary where
-  decodeJson json = do
-    obj <- decodeJson json
-    id <- obj .: "id"
-    name <- obj .: "name"
-    bucketid <- obj .: "bucketid"
-    isuploaded <- obj .: "isuploaded"
-    pure { id, name, bucketid, isuploaded }
 -- | Contains a presigned URL for direct file operations.
 -- |
--- | * `url`: `String` -
--- | The presigned URL for file operations.
--- | Example: `"https://storage.example.com/files/abc123?signature=xyz"`
--- | * `expiration`: `Int` -
--- | The time in seconds until the URL expires.
--- | Example: `3600`
+-- | * `url`: `String` - The presigned URL for file operations.
+-- | * `expiration`: `Int` - The time in seconds until the URL expires.
 type PresignedURLResponse =
-  {url :: String --
--- | The presigned URL for file operations.
--- | Example: `"https://storage.example.com/files/abc123?signature=xyz"`
-  , expiration :: Int --
--- | The time in seconds until the URL expires.
--- | Example: `3600`
+  { url :: String -- The presigned URL for file operations.
+  , expiration :: Int -- The time in seconds until the URL expires.
   }
 
--- JSON instances for PresignedURLResponse
-instance encodeJsonPresignedURLResponse :: EncodeJson PresignedURLResponse where
-  encodeJson record =
-    "url" := record.url
+presignedurlresponseCodec :: CJ.Codec PresignedURLResponse
+presignedurlresponseCodec =
+  CJ.object $ CJR.record
+    { url: CJ.identity CJ.string
+    , expiration: CJ.identity CJ.int
+    }
 
-    ~> "expiration" := record.expiration
-    ~> jsonEmptyObject
-
-instance decodeJsonPresignedURLResponse :: DecodeJson PresignedURLResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    url <- obj .: "url"
-    expiration <- obj .: "expiration"
-    pure { url, expiration }
 -- | Metadata that can be updated for an existing file.
 -- |
--- | * `name` (Optional): `String` -
--- | New name to assign to the file.
--- | Example: `"renamed-file.jpg"`
--- | * `metadata` (Optional): `Object` -
--- | Updated custom metadata to associate with the file.
--- | Example: `{"alt":"Updated image description","category":"profile"}`
+-- | * `name` (Optional): `Maybe String` - New name to assign to the file.
+-- | * `metadata` (Optional): `Maybe J.JObject` - Updated custom metadata to associate with the file.
 type UpdateFileMetadata =
-  {name :: Maybe (String) --
--- | New name to assign to the file.
--- | Example: `"renamed-file.jpg"`
-  , metadata :: Maybe (Object) --
--- | Updated custom metadata to associate with the file.
--- | Example: `{"alt":"Updated image description","category":"profile"}`
+  { name :: Maybe String -- New name to assign to the file.
+  , metadata :: Maybe J.JObject -- Updated custom metadata to associate with the file.
   }
 
--- JSON instances for UpdateFileMetadata
-instance encodeJsonUpdateFileMetadata :: EncodeJson UpdateFileMetadata where
-  encodeJson record =
-    "name" := record.name
+updatefilemetadataCodec :: CJ.Codec UpdateFileMetadata
+updatefilemetadataCodec =
+  CJ.object $ CJR.record
+    { name: CJR.optional CJ.string
+    , metadata: CJR.optional CJ.jobject
+    }
 
-    ~> "metadata" := record.metadata
-    ~> jsonEmptyObject
-
-instance decodeJsonUpdateFileMetadata :: DecodeJson UpdateFileMetadata where
-  decodeJson json = do
-    obj <- decodeJson json
-    name <- obj .:? "name"
-    metadata <- obj .:? "metadata"
-    pure { name, metadata }
 -- | Metadata provided when uploading a new file.
 -- |
--- | * `id` (Optional): `String` -
--- | Optional custom ID for the file. If not provided, a UUID will be generated.
--- | Example: `"custom-id-123"`
--- | * `name` (Optional): `String` -
--- | Name to assign to the file. If not provided, the original filename will be used.
--- | Example: `"custom-filename.png"`
--- | * `metadata` (Optional): `Object` -
--- | Custom metadata to associate with the file.
--- | Example: `{"alt":"Custom image","category":"document"}`
+-- | * `id` (Optional): `Maybe String` - Optional custom ID for the file. If not provided, a UUID will be generated.
+-- | * `name` (Optional): `Maybe String` - Name to assign to the file. If not provided, the original filename will be used.
+-- | * `metadata` (Optional): `Maybe J.JObject` - Custom metadata to associate with the file.
 type UploadFileMetadata =
-  {id :: Maybe (String) --
--- | Optional custom ID for the file. If not provided, a UUID will be generated.
--- | Example: `"custom-id-123"`
-  , name :: Maybe (String) --
--- | Name to assign to the file. If not provided, the original filename will be used.
--- | Example: `"custom-filename.png"`
-  , metadata :: Maybe (Object) --
--- | Custom metadata to associate with the file.
--- | Example: `{"alt":"Custom image","category":"document"}`
+  { id :: Maybe String -- Optional custom ID for the file. If not provided, a UUID will be generated.
+  , name :: Maybe String -- Name to assign to the file. If not provided, the original filename will be used.
+  , metadata :: Maybe J.JObject -- Custom metadata to associate with the file.
   }
 
--- JSON instances for UploadFileMetadata
-instance encodeJsonUploadFileMetadata :: EncodeJson UploadFileMetadata where
-  encodeJson record =
-    "id" := record.id
+uploadfilemetadataCodec :: CJ.Codec UploadFileMetadata
+uploadfilemetadataCodec =
+  CJ.object $ CJR.record
+    { id: CJR.optional CJ.string
+    , name: CJR.optional CJ.string
+    , metadata: CJR.optional CJ.jobject
+    }
 
-    ~> "name" := record.name
-
-    ~> "metadata" := record.metadata
-    ~> jsonEmptyObject
-
-instance decodeJsonUploadFileMetadata :: DecodeJson UploadFileMetadata where
-  decodeJson json = do
-    obj <- decodeJson json
-    id <- obj .:? "id"
-    name <- obj .:? "name"
-    metadata <- obj .:? "metadata"
-    pure { id, name, metadata }
 -- | Contains version information about the storage service.
 -- |
--- | * `buildversion`: `String` -
--- | The version number of the storage service build.
--- | Example: `"1.2.3"`
+-- | * `buildversion`: `String` - The version number of the storage service build.
 type VersionInformation =
-  {buildversion :: String --
--- | The version number of the storage service build.
--- | Example: `"1.2.3"`
+  { buildversion :: String -- The version number of the storage service build.
   }
 
--- JSON instances for VersionInformation
-instance encodeJsonVersionInformation :: EncodeJson VersionInformation where
-  encodeJson record =
-    "buildversion" := record.buildversion
-    ~> jsonEmptyObject
-
-instance decodeJsonVersionInformation :: DecodeJson VersionInformation where
-  decodeJson json = do
-    obj <- decodeJson json
-    buildversion <- obj .: "buildversion"
-    pure { buildversion }
+versioninformationCodec :: CJ.Codec VersionInformation
+versioninformationCodec =
+  CJ.object $ CJR.record
+    { buildversion: CJ.identity CJ.string
+    }
 
 -- | Output format for image files. Use 'auto' for content negotiation based on Accept header
 data OutputImageFormat
@@ -440,200 +234,131 @@ instance showOutputImageFormat :: Show OutputImageFormat where
 outputimageformatCodec :: CJ.Codec OutputImageFormat
 outputimageformatCodec = CJ.prismaticCodec "OutputImageFormat" dec enc CJ.string
   where
-    dec = case _ of
-      "Auto" -> Just OutputImageFormat_Auto
-      "Same" -> Just OutputImageFormat_Same
-      "Jpeg" -> Just OutputImageFormat_Jpeg
-      "Webp" -> Just OutputImageFormat_Webp
-      "Png" -> Just OutputImageFormat_Png
-      "Avif" -> Just OutputImageFormat_Avif
-      _ -> Nothing
+  dec = case _ of
+    "Auto" -> Just OutputImageFormat_Auto
+    "Same" -> Just OutputImageFormat_Same
+    "Jpeg" -> Just OutputImageFormat_Jpeg
+    "Webp" -> Just OutputImageFormat_Webp
+    "Png" -> Just OutputImageFormat_Png
+    "Avif" -> Just OutputImageFormat_Avif
+    _ -> Nothing
 
-    enc = case _ of
-      OutputImageFormat_Auto -> "Auto"
-      OutputImageFormat_Same -> "Same"
-      OutputImageFormat_Jpeg -> "Jpeg"
-      OutputImageFormat_Webp -> "Webp"
-      OutputImageFormat_Png -> "Png"
-      OutputImageFormat_Avif -> "Avif"
+  enc = case _ of
+    OutputImageFormat_Auto -> "Auto"
+    OutputImageFormat_Same -> "Same"
+    OutputImageFormat_Jpeg -> "Jpeg"
+    OutputImageFormat_Webp -> "Webp"
+    OutputImageFormat_Png -> "Png"
+    OutputImageFormat_Avif -> "Avif"
+
 -- |
--- |
--- | * `bucketid` (Optional): `String` -
--- | Target bucket identifier where files will be stored.
--- | Example: `"user-uploads"`
--- | * `metadataarray` (Optional): `Array UploadFileMetadata` -
--- | Optional custom metadata for each uploaded file. Must match the order of the file[] array.
--- | * `filearray`: `Array Blob` -
--- | Array of files to upload.
+-- | * `bucketid` (Optional): `Maybe String` - Target bucket identifier where files will be stored.
+-- | * `metadataarray` (Optional): `Maybe (Array UploadFileMetadata)` - Optional custom metadata for each uploaded file. Must match the order of the file[] array.
+-- | * `filearray`: `Array Blob` - Array of files to upload.
 type UploadFilesBody =
-  {bucketid :: Maybe (String) --
--- | Target bucket identifier where files will be stored.
--- | Example: `"user-uploads"`
-  , metadataarray :: Maybe (Array UploadFileMetadata) --
--- | Optional custom metadata for each uploaded file. Must match the order of the file[] array.
-  , filearray :: Array Blob --
--- | Array of files to upload.
+  { bucketid :: Maybe String -- Target bucket identifier where files will be stored.
+  , metadataarray :: Maybe (Array UploadFileMetadata) -- Optional custom metadata for each uploaded file. Must match the order of the file[] array.
+  , filearray :: Array Blob -- Array of files to upload.
   }
 
--- JSON instances for UploadFilesBody
-instance encodeJsonUploadFilesBody :: EncodeJson UploadFilesBody where
-  encodeJson record =
-    "bucketId" := record.bucketid
+uploadfilesbodyCodec :: CJ.Codec UploadFilesBody
+uploadfilesbodyCodec =
+  CJ.object $ CJR.record
+    { bucketid: CJR.optional CJ.string
+    , metadataarray: CJR.optional CJ.array uploadfilemetadataCodec
+    , filearray: CJ.identity CJ.array CJ.string -- Blob as base64 string
+    }
 
-    ~> "metadataArray" := record.metadataarray
-
-    ~> "fileArray" := record.filearray
-    ~> jsonEmptyObject
-
-instance decodeJsonUploadFilesBody :: DecodeJson UploadFilesBody where
-  decodeJson json = do
-    obj <- decodeJson json
-    bucketid <- obj .:? "bucketId"
-    metadataarray <- obj .:? "metadataArray"
-    filearray <- obj .: "fileArray"
-    pure { bucketid, metadataarray, filearray }
 -- |
--- |
--- | * `processedfiles`: `Array FileMetadata` -
--- | List of successfully processed files with their metadata.
+-- | * `processedfiles`: `Array FileMetadata` - List of successfully processed files with their metadata.
 type UploadFilesResponse201 =
-  {processedfiles :: Array FileMetadata --
--- | List of successfully processed files with their metadata.
+  { processedfiles :: Array FileMetadata -- List of successfully processed files with their metadata.
   }
 
--- JSON instances for UploadFilesResponse201
-instance encodeJsonUploadFilesResponse201 :: EncodeJson UploadFilesResponse201 where
-  encodeJson record =
-    "processedfiles" := record.processedfiles
-    ~> jsonEmptyObject
+uploadfilesresponse201Codec :: CJ.Codec UploadFilesResponse201
+uploadfilesresponse201Codec =
+  CJ.object $ CJR.record
+    { processedfiles: CJ.identity CJ.array filemetadataCodec
+    }
 
-instance decodeJsonUploadFilesResponse201 :: DecodeJson UploadFilesResponse201 where
-  decodeJson json = do
-    obj <- decodeJson json
-    processedfiles <- obj .: "processedfiles"
-    pure { processedfiles }
 -- |
--- |
--- | * `metadata` (Optional): `UpdateFileMetadata` -
--- | Metadata that can be updated for an existing file.
--- | * `file` (Optional): `Blob` -
--- | New file content to replace the existing file
--- | Format: binary
+-- | * `metadata` (Optional): `Maybe UpdateFileMetadata` - Metadata that can be updated for an existing file.
+-- | * `file` (Optional): `Maybe Blob` - New file content to replace the existing file
 type ReplaceFileBody =
-  {metadata :: Maybe (UpdateFileMetadata) --
--- | Metadata that can be updated for an existing file.
-  , file :: Maybe (Blob) --
--- | New file content to replace the existing file
--- | Format: binary
+  { metadata :: Maybe UpdateFileMetadata -- Metadata that can be updated for an existing file.
+  , file :: Maybe Blob -- New file content to replace the existing file
   }
 
--- JSON instances for ReplaceFileBody
-instance encodeJsonReplaceFileBody :: EncodeJson ReplaceFileBody where
-  encodeJson record =
-    "metadata" := record.metadata
+replacefilebodyCodec :: CJ.Codec ReplaceFileBody
+replacefilebodyCodec =
+  CJ.object $ CJR.record
+    { metadata: CJR.optional updatefilemetadataCodec
+    , file: CJR.optional CJ.string -- Blob as base64 string
+    }
 
-    ~> "file" := record.file
-    ~> jsonEmptyObject
-
-instance decodeJsonReplaceFileBody :: DecodeJson ReplaceFileBody where
-  decodeJson json = do
-    obj <- decodeJson json
-    metadata <- obj .:? "metadata"
-    file <- obj .:? "file"
-    pure { metadata, file }
 -- |
--- |
--- | * `metadata` (Optional): `Array FileSummary` -
+-- | * `metadata` (Optional): `Maybe (Array FileSummary)`
 type DeleteBrokenMetadataResponse200 =
-  {metadata :: Maybe (Array FileSummary) --
+  { metadata :: Maybe (Array FileSummary)
   }
 
--- JSON instances for DeleteBrokenMetadataResponse200
-instance encodeJsonDeleteBrokenMetadataResponse200 :: EncodeJson DeleteBrokenMetadataResponse200 where
-  encodeJson record =
-    "metadata" := record.metadata
-    ~> jsonEmptyObject
+deletebrokenmetadataresponse200Codec :: CJ.Codec DeleteBrokenMetadataResponse200
+deletebrokenmetadataresponse200Codec =
+  CJ.object $ CJR.record
+    { metadata: CJR.optional CJ.array filesummaryCodec
+    }
 
-instance decodeJsonDeleteBrokenMetadataResponse200 :: DecodeJson DeleteBrokenMetadataResponse200 where
-  decodeJson json = do
-    obj <- decodeJson json
-    metadata <- obj .:? "metadata"
-    pure { metadata }
 -- |
--- |
--- | * `files` (Optional): `Array String` -
+-- | * `files` (Optional): `Maybe (Array String)`
 type DeleteOrphanedFilesResponse200 =
-  {files :: Maybe (Array String) --
+  { files :: Maybe (Array String)
   }
 
--- JSON instances for DeleteOrphanedFilesResponse200
-instance encodeJsonDeleteOrphanedFilesResponse200 :: EncodeJson DeleteOrphanedFilesResponse200 where
-  encodeJson record =
-    "files" := record.files
-    ~> jsonEmptyObject
+deleteorphanedfilesresponse200Codec :: CJ.Codec DeleteOrphanedFilesResponse200
+deleteorphanedfilesresponse200Codec =
+  CJ.object $ CJR.record
+    { files: CJR.optional CJ.array CJ.string
+    }
 
-instance decodeJsonDeleteOrphanedFilesResponse200 :: DecodeJson DeleteOrphanedFilesResponse200 where
-  decodeJson json = do
-    obj <- decodeJson json
-    files <- obj .:? "files"
-    pure { files }
 -- |
--- |
--- | * `metadata` (Optional): `Array FileSummary` -
+-- | * `metadata` (Optional): `Maybe (Array FileSummary)`
 type ListBrokenMetadataResponse200 =
-  {metadata :: Maybe (Array FileSummary) --
+  { metadata :: Maybe (Array FileSummary)
   }
 
--- JSON instances for ListBrokenMetadataResponse200
-instance encodeJsonListBrokenMetadataResponse200 :: EncodeJson ListBrokenMetadataResponse200 where
-  encodeJson record =
-    "metadata" := record.metadata
-    ~> jsonEmptyObject
+listbrokenmetadataresponse200Codec :: CJ.Codec ListBrokenMetadataResponse200
+listbrokenmetadataresponse200Codec =
+  CJ.object $ CJR.record
+    { metadata: CJR.optional CJ.array filesummaryCodec
+    }
 
-instance decodeJsonListBrokenMetadataResponse200 :: DecodeJson ListBrokenMetadataResponse200 where
-  decodeJson json = do
-    obj <- decodeJson json
-    metadata <- obj .:? "metadata"
-    pure { metadata }
 -- |
--- |
--- | * `metadata` (Optional): `Array FileSummary` -
+-- | * `metadata` (Optional): `Maybe (Array FileSummary)`
 type ListFilesNotUploadedResponse200 =
-  {metadata :: Maybe (Array FileSummary) --
+  { metadata :: Maybe (Array FileSummary)
   }
 
--- JSON instances for ListFilesNotUploadedResponse200
-instance encodeJsonListFilesNotUploadedResponse200 :: EncodeJson ListFilesNotUploadedResponse200 where
-  encodeJson record =
-    "metadata" := record.metadata
-    ~> jsonEmptyObject
+listfilesnotuploadedresponse200Codec :: CJ.Codec ListFilesNotUploadedResponse200
+listfilesnotuploadedresponse200Codec =
+  CJ.object $ CJR.record
+    { metadata: CJR.optional CJ.array filesummaryCodec
+    }
 
-instance decodeJsonListFilesNotUploadedResponse200 :: DecodeJson ListFilesNotUploadedResponse200 where
-  decodeJson json = do
-    obj <- decodeJson json
-    metadata <- obj .:? "metadata"
-    pure { metadata }
 -- |
--- |
--- | * `files` (Optional): `Array String` -
+-- | * `files` (Optional): `Maybe (Array String)`
 type ListOrphanedFilesResponse200 =
-  {files :: Maybe (Array String) --
+  { files :: Maybe (Array String)
   }
 
--- JSON instances for ListOrphanedFilesResponse200
-instance encodeJsonListOrphanedFilesResponse200 :: EncodeJson ListOrphanedFilesResponse200 where
-  encodeJson record =
-    "files" := record.files
-    ~> jsonEmptyObject
+listorphanedfilesresponse200Codec :: CJ.Codec ListOrphanedFilesResponse200
+listorphanedfilesresponse200Codec =
+  CJ.object $ CJR.record
+    { files: CJR.optional CJ.array CJ.string
+    }
 
-instance decodeJsonListOrphanedFilesResponse200 :: DecodeJson ListOrphanedFilesResponse200 where
-  decodeJson json = do
-    obj <- decodeJson json
-    files <- obj .:? "files"
-    pure { files }
 -- | Parameters for the GetFile method.
 type GetFileParams =
-  {q :: Maybe Int -- Image quality (1-100). Only applies to JPEG, WebP and PNG files
+  { q :: Maybe Int -- Image quality (1-100). Only applies to JPEG, WebP and PNG files
   , h :: Maybe Int -- Maximum height to resize image to while maintaining aspect ratio. Only applies to image files
   , w :: Maybe Int -- Maximum width to resize image to while maintaining aspect ratio. Only applies to image files
   , b :: Maybe Number -- Blur the image using this sigma value. Only applies to image files
@@ -643,15 +368,16 @@ type GetFileParams =
 getfileParamsCodec :: CJ.Codec GetFileParams
 getfileParamsCodec =
   CJ.object $ CJR.record
-    {q: CJ.maybe CJ.int
+    { q: CJ.maybe CJ.int
     , h: CJ.maybe CJ.int
     , w: CJ.maybe CJ.int
     , b: CJ.maybe CJ.number
     , f: CJ.maybe outputimageformatCodec
     }
+
 -- | Parameters for the GetFileMetadataHeaders method.
 type GetFileMetadataHeadersParams =
-  {q :: Maybe Int -- Image quality (1-100). Only applies to JPEG, WebP and PNG files
+  { q :: Maybe Int -- Image quality (1-100). Only applies to JPEG, WebP and PNG files
   , h :: Maybe Int -- Maximum height to resize image to while maintaining aspect ratio. Only applies to image files
   , w :: Maybe Int -- Maximum width to resize image to while maintaining aspect ratio. Only applies to image files
   , b :: Maybe Number -- Blur the image using this sigma value. Only applies to image files
@@ -661,7 +387,7 @@ type GetFileMetadataHeadersParams =
 getfilemetadataheadersParamsCodec :: CJ.Codec GetFileMetadataHeadersParams
 getfilemetadataheadersParamsCodec =
   CJ.object $ CJR.record
-    {q: CJ.maybe CJ.int
+    { q: CJ.maybe CJ.int
     , h: CJ.maybe CJ.int
     , w: CJ.maybe CJ.int
     , b: CJ.maybe CJ.number
@@ -669,15 +395,17 @@ getfilemetadataheadersParamsCodec =
     }
 
 -- | API Client type
-type uploadFilesFn :: UploadFilesBody -> Aff (FetchResponse UploadFilesResponse201)
-type deleteFileFn :: String -> Aff (FetchResponse void)
-type getFileFn :: String -> Maybe GetFileParams -> Aff (FetchResponse Blob)
-type getFileMetadataHeadersFn :: String -> Maybe GetFileMetadataHeadersParams -> Aff (FetchResponse void)
-type replaceFileFn :: String -> ReplaceFileBody -> Aff (FetchResponse FileMetadata)
-type getFilePresignedURLFn :: String -> Aff (FetchResponse PresignedURLResponse)
-type deleteBrokenMetadataFn :: Aff (FetchResponse DeleteBrokenMetadataResponse200)
-type deleteOrphanedFilesFn :: Aff (FetchResponse DeleteOrphanedFilesResponse200)
-type listBrokenMetadataFn :: Aff (FetchResponse ListBrokenMetadataResponse200)
-type listFilesNotUploadedFn :: Aff (FetchResponse ListFilesNotUploadedResponse200)
-type listOrphanedFilesFn :: Aff (FetchResponse ListOrphanedFilesResponse200)
-type getVersionFn :: Aff (FetchResponse VersionInformation)
+type APIClient fetchResponse =
+  { uploadFiles :: UploadFilesBody -> Aff (fetchResponse UploadFilesResponse201)
+  , deleteFile :: String -> Aff (fetchResponse Unit)
+  , getFile :: String -> Maybe GetFileParams -> Aff (fetchResponse Blob)
+  , getFileMetadataHeaders :: String -> Maybe GetFileMetadataHeadersParams -> Aff (fetchResponse Unit)
+  , replaceFile :: String -> ReplaceFileBody -> Aff (fetchResponse FileMetadata)
+  , getFilePresignedURL :: String -> Aff (fetchResponse PresignedURLResponse)
+  , deleteBrokenMetadata :: Aff (fetchResponse DeleteBrokenMetadataResponse200)
+  , deleteOrphanedFiles :: Aff (fetchResponse DeleteOrphanedFilesResponse200)
+  , listBrokenMetadata :: Aff (fetchResponse ListBrokenMetadataResponse200)
+  , listFilesNotUploaded :: Aff (fetchResponse ListFilesNotUploadedResponse200)
+  , listOrphanedFiles :: Aff (fetchResponse ListOrphanedFilesResponse200)
+  , getVersion :: Aff (fetchResponse VersionInformation)
+  }

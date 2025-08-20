@@ -50,113 +50,15 @@ type {{ typeName .Name }}Params =
 {{- end }}
 
 -- | API Client type
-{{- range .Methods }}
-type {{ lowerFirst .Name }}Fn :: {{ template "methodSignature" . }}
-{{- end }}
-
-{{- define "renderObject" -}}
-{{- $type := . }}
-{{- if hasValidDescription .Schema.Schema.Description }}
--- | {{ .Schema.Schema.Description }}
-{{- end }}
-{{- if gt (len .Properties) 0 }}
--- |
-{{- range .Properties }}
--- | * `{{ recordFieldName .Name }}`{{ if not .Required }} (Optional){{ end }}: `{{ if not .Required }}Maybe {{ if needsParentheses .Type.Name }}({{ .Type.Name }}){{ else }}{{ .Type.Name }}{{ end }}{{ else }}{{ .Type.Name }}{{ end }}`{{ if hasValidDescription .Parameter.Description }} - {{ .Parameter.Description }}{{ end }}
-{{- end }}
-{{- end }}
-type {{ .Name }} =
-  { {{- range $i, $prop := .Properties }}{{ if ne $i 0 }}
-  , {{ end }}{{ recordFieldName .Name }} :: {{ if not .Required }}Maybe {{ if needsParentheses .Type.Name }}({{ .Type.Name }}){{ else }}{{ .Type.Name }}{{ end }}{{ else }}{{ .Type.Name }}{{ end }}{{ if hasValidDescription .Parameter.Description }} -- {{ .Parameter.Description }}{{ end }}
+type APIClient fetchResponse =
+  { {{- range $i, $method := .Methods }}{{ if ne $i 0 }}
+  , {{ end }}{{ lowerFirst .Name }} :: {{ template "apiMethodSignature" . }}
   {{- end }}
   }
 
-{{ recordFieldName .Name }}Codec :: CJ.Codec {{ .Name }}
-{{ recordFieldName .Name }}Codec =
-  CJ.object $ CJR.record
-    { {{- range $i, $prop := .Properties }}{{ if ne $i 0 }}
-    , {{ end }}{{ recordFieldName .Name }}: {{ if not .Required }}{{ if .Parameter.Required }}CJ.maybe {{ else }}CJR.optional {{ end }}{{ end }}{{ template "codecForType" .Type }}
-    {{- end }}
-    }
-{{- end }}
-
-{{- define "renderEnum" -}}
-{{- $type := . }}
-{{- if hasValidDescription .Schema.Schema.Description }}
--- | {{ .Schema.Schema.Description }}
-{{- end }}
-data {{ $type.Name }}
-{{- range $i, $value := $type.Values }}
-  {{- if eq $i 0 }}
-  = {{ if eq $value "" }}{{ $type.Name }}_None{{ else }}{{ $type.Name }}_{{ $value }}{{ end }}
-  {{- else }}
-  | {{ if eq $value "" }}{{ $type.Name }}_None{{ else }}{{ $type.Name }}_{{ $value }}{{ end }}
-  {{- end }}
-{{- end }}
-
-derive instance generic{{ .Name }} :: Generic {{ .Name }} _
-derive instance eq{{ .Name }} :: Eq {{ .Name }}
-derive instance ord{{ .Name }} :: Ord {{ .Name }}
-
-instance show{{ .Name }} :: Show {{ .Name }} where
-  show = genericShow
-
-{{ recordFieldName .Name }}Codec :: CJ.Codec {{ .Name }}
-{{ recordFieldName .Name }}Codec = CJ.prismaticCodec "{{ .Name }}" dec enc CJ.string
-  where
-    dec = case _ of
-{{- range $value := .Values }}
-      {{- if eq $value "" }}
-      "" -> Just {{ $type.Name }}_None
-      {{- else }}
-      "{{ $value }}" -> Just {{ $type.Name }}_{{ $value }}
-      {{- end }}
-{{- end }}
-      _ -> Nothing
-
-    enc = case _ of
-{{- range $value := .Values }}
-      {{- if eq $value "" }}
-      {{ $type.Name }}_None -> ""
-      {{- else }}
-      {{ $type.Name }}_{{ $value }} -> "{{ $value }}"
-      {{- end }}
-{{- end }}
-{{- end }}
-
-{{- define "renderAlias" -}}
-{{- if hasValidDescription .Alias.Schema.Schema.Description }}
--- | {{ .Alias.Schema.Schema.Description }}
-{{- end }}
-type {{ .Name }} = {{ .Alias.Name }}
-
-{{ recordFieldName .Name }}Codec :: CJ.Codec {{ .Name }}
-{{ recordFieldName .Name }}Codec = {{ template "codecForType" .Alias }}
-{{- end }}
-
-{{- define "codecForType" -}}
-{{- if eq .Name "String" -}}
-CJ.string
-{{- else if eq .Name "Int" -}}
-CJ.int
-{{- else if eq .Name "Number" -}}
-CJ.number
-{{- else if eq .Name "Boolean" -}}
-CJ.boolean
-{{- else if eq .Name "Blob" -}}
-CJ.string  -- Blob as base64 string
-{{- else if hasPrefix .Name "Array " -}}
-CJ.array {{ template "codecForType" .Item }}
-{{- else if eq .Name "Unit" -}}
-CJ.null
-{{- else -}}
-{{ recordFieldName .Name }}Codec
-{{- end -}}
-{{- end }}
-
-{{- define "methodSignature" -}}
+{{- define "apiMethodSignature" -}}
 {{- range .PathParameters }}{{ .Type.Name }} -> {{ end -}}
 {{- range $code, $type := .Bodies }}{{ if not $.BodyRequired }}Maybe {{ if needsParentheses $type.Name }}({{ $type.Name }}){{ else }}{{ $type.Name }}{{ end }}{{ else }}{{ $type.Name }}{{ end }} -> {{ end -}}
 {{- if .HasQueryParameters }}Maybe {{ typeName .Name }}Params -> {{ end -}}
-Aff (FetchResponse {{ .ReturnType }})
+Aff (fetchResponse {{ if eq .ReturnType "void" }}Unit{{ else }}{{ .ReturnType }}{{ end }})
 {{- end -}}

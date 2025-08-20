@@ -88,6 +88,23 @@ func hasPrefix(s, prefix string) bool {
 	return strings.HasPrefix(s, prefix)
 }
 
+// Convert enum value (from API) to PureScript constructor name
+func enumValueToConstructor(value interface{}) string {
+	if s, ok := value.(string); ok {
+		// Convert kebab-case, snake_case, or camelCase to PascalCase
+		return format.ToCamelCase(s)
+	}
+	return fmt.Sprintf("Value%v", value)
+}
+
+// Convert enum value to JSON string representation
+func enumValueToJsonString(value interface{}) string {
+	if s, ok := value.(string); ok {
+		return fmt.Sprintf("\"%s\"", s)
+	}
+	return fmt.Sprintf("\"%v\"", value)
+}
+
 // Map Go/OpenAPI types to PureScript codec functions
 func getCodecForScalarType(scalarType string, format string) string {
 	switch scalarType {
@@ -111,13 +128,15 @@ func getCodecForScalarType(scalarType string, format string) string {
 
 func (p *Purescript) GetFuncMap() map[string]any {
 	return map[string]any{
-		"recordFieldName":        recordFieldName,
-		"typeName":              typeName,
-		"lowerFirst":            lowerFirst,
-		"needsParentheses":      needsParentheses,
-		"hasValidDescription":   hasValidDescription,
-		"hasPrefix":             hasPrefix,
-		"getCodecForScalarType": getCodecForScalarType,
+		"recordFieldName":          recordFieldName,
+		"typeName":                typeName,
+		"lowerFirst":              lowerFirst,
+		"needsParentheses":        needsParentheses,
+		"hasValidDescription":     hasValidDescription,
+		"hasPrefix":               hasPrefix,
+		"getCodecForScalarType":   getCodecForScalarType,
+		"enumValueToConstructor":  enumValueToConstructor,
+		"enumValueToJsonString":   enumValueToJsonString,
 	}
 }
 
@@ -139,6 +158,8 @@ func (p *Purescript) TypeScalarName(scalar *processor.TypeScalar) string {
 	case "boolean":
 		return "Boolean"
 	case "null":
+		return "Unit"
+	case "void":
 		return "Unit"
 	}
 	return "String"
@@ -173,7 +194,7 @@ func (p *Purescript) TypeMapName(schema *processor.TypeMap) string {
 	if v, ok := schema.Schema().Schema().Extensions.Get(extCustomType); ok {
 		return v.Value
 	}
-	return "Object"
+	return "J.JObject"
 }
 
 func (p *Purescript) MethodName(name string) string {
