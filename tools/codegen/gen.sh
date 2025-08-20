@@ -12,22 +12,22 @@ mkdir -p "$ROOT/packages/purescript-nhost/src/Auth"
 mkdir -p "$ROOT/packages/purescript-nhost/src/Storage"
 
 # run generators
-# go run main.go gen \
+# go run "$SCRIPT_DIR/main.go" gen \
 #     --openapi-file "$ROOT/packages/nhost-js/api/auth.yaml" \
 #     --output-file "$ROOT/packages/nhost-js/src/auth/client.ts" \
 #     --plugin typescript
 #
-# go run main.go gen \
+# go run "$SCRIPT_DIR/main.go" gen \
 #     --openapi-file "$ROOT/packages/nhost-js/api/storage.yaml" \
 #     --output-file "$ROOT/packages/nhost-js/src/storage/client.ts" \
 #     --plugin typescript
 
-go run main.go gen \
+go run "$SCRIPT_DIR/main.go" gen \
     --openapi-file "$ROOT/packages/nhost-js/api/auth.yaml" \
     --output-file "$ROOT/packages/purescript-nhost/src/Auth/Client.purs" \
     --plugin purescript
 
-go run main.go gen \
+go run "$SCRIPT_DIR/main.go" gen \
     --openapi-file "$ROOT/packages/nhost-js/api/storage.yaml" \
     --output-file "$ROOT/packages/purescript-nhost/src/Storage/Client.purs" \
     --plugin purescript
@@ -37,6 +37,10 @@ go run main.go gen \
   cd "$ROOT/packages/purescript-nhost"
   purs-tidy format-in-place src
   purs-module-tidy src test
+
+  # Remove trailing whitespaces from all .purs files in src and test directories
+  # The -i '' is for macOS/BSD compatibility; for GNU/Linux, -i is sufficient.
+  find src test -name "*.purs" -exec sed -i'' -e 's/[ \t]*$//' {} +
 )
 
 # run make with project root

@@ -16,7 +16,6 @@ import Effect.Aff (Aff, throwError)
 import Effect.Class (liftEffect)
 import Foreign.Object (Object)
 import Web.File.Blob (Blob)
-import Data.Argonaut.Parser (jsonParser)
 
 -- | Date in RFC 2822 format
 type RFC2822Date = String
@@ -420,12 +419,12 @@ instance decodeJsonVersionInformation :: DecodeJson VersionInformation where
 
 -- | Output format for image files. Use 'auto' for content negotiation based on Accept header
 data OutputImageFormat
-  = Auto
-  | Same
-  | Jpeg
-  | Webp
-  | Png
-  | Avif
+  = OutputImageFormat_Auto
+  | OutputImageFormat_Same
+  | OutputImageFormat_Jpeg
+  | OutputImageFormat_Webp
+  | OutputImageFormat_Png
+  | OutputImageFormat_Avif
 
 derive instance genericOutputImageFormat :: Generic OutputImageFormat _
 derive instance eqOutputImageFormat :: Eq OutputImageFormat
@@ -436,23 +435,23 @@ instance showOutputImageFormat :: Show OutputImageFormat where
 
 instance encodeJsonOutputImageFormat :: EncodeJson OutputImageFormat where
   encodeJson = case _ of
-    Auto -> encodeJson "Auto"
-    Same -> encodeJson "Same"
-    Jpeg -> encodeJson "Jpeg"
-    Webp -> encodeJson "Webp"
-    Png -> encodeJson "Png"
-    Avif -> encodeJson "Avif"
+    OutputImageFormat_Auto -> encodeJson "Auto"
+    OutputImageFormat_Same -> encodeJson "Same"
+    OutputImageFormat_Jpeg -> encodeJson "Jpeg"
+    OutputImageFormat_Webp -> encodeJson "Webp"
+    OutputImageFormat_Png -> encodeJson "Png"
+    OutputImageFormat_Avif -> encodeJson "Avif"
 
 instance decodeJsonOutputImageFormat :: DecodeJson OutputImageFormat where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "Auto" -> pure Auto
-      "Same" -> pure Same
-      "Jpeg" -> pure Jpeg
-      "Webp" -> pure Webp
-      "Png" -> pure Png
-      "Avif" -> pure Avif
+      "Auto" -> pure OutputImageFormat_Auto
+      "Same" -> pure OutputImageFormat_Same
+      "Jpeg" -> pure OutputImageFormat_Jpeg
+      "Webp" -> pure OutputImageFormat_Webp
+      "Png" -> pure OutputImageFormat_Png
+      "Avif" -> pure OutputImageFormat_Avif
       _ -> Left $ "Invalid OutputImageFormat: " <> str
 
 -- |

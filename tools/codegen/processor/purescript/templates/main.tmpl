@@ -10,30 +10,26 @@ import Data.Argonaut.Decode (class DecodeJson, decodeJson, (.:), (.:?))
 import Data.Argonaut.Encode (class EncodeJson, encodeJson, (:=), (~>))
 import Data.Maybe (Maybe)
 import Data.Either (Either)
-import Data.String (intercalate)
-import Data.Array (catMaybes)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff, throwError)
 import Effect.Class (liftEffect)
-import Effect.Ref (Ref, newSTRef, readSTRef, modifySTRef)
 import Foreign.Object (Object)
 import Web.File.Blob (Blob)
-import Data.Argonaut.Parser (jsonParser)
-import Data.Argonaut.Stringify (stringify)
 
 {{- range .Types }}
 {{- if eq .Kind "object" }}
 {{ template "renderObject" . }}
 {{- else if eq .Kind "enum" }}
--- | {{ .Schema.Schema.Description }}
-data {{ .Name }}
-{{- range $i, $value := .Values }}
+    {{- $type := . }}
+-- | {{ $type.Schema.Schema.Description }}
+data {{ $type.Name }}
+{{- range $i, $value := $type.Values }}
   {{- if eq $i 0 }}
-  = {{ if eq $value "" }}None{{ else }}{{ $value }}{{ end }}
+  = {{ if eq $value "" }}{{ $type.Name }}_None{{ else }}{{ $type.Name }}_{{ $value }}{{ end }}
   {{- else }}
-  | {{ if eq $value "" }}None{{ else }}{{ $value }}{{ end }}
-  {{- end }}
+  | {{ if eq $value "" }}{{ $type.Name }}_None{{ else }}{{ $type.Name }}_{{ $value }}{{ end }}
+{{- end }}
 {{- end }}
 
 derive instance generic{{ .Name }} :: Generic {{ .Name }} _
@@ -47,9 +43,9 @@ instance encodeJson{{ .Name }} :: EncodeJson {{ .Name }} where
   encodeJson = case _ of
 {{- range $value := .Values }}
     {{- if eq $value "" }}
-    None -> encodeJson ""
+    {{ $type.Name }}_None -> encodeJson ""  -- Corrected: using $type.Name
     {{- else }}
-    {{ $value }} -> encodeJson "{{ $value }}"
+    {{ $type.Name }}_{{ $value }} -> encodeJson "{{ $value }}"
     {{- end }}
 {{- end }}
 
@@ -59,9 +55,9 @@ instance decodeJson{{ .Name }} :: DecodeJson {{ .Name }} where
     case str of
 {{- range $value := .Values }}
       {{- if eq $value "" }}
-      "" -> pure None
+      "" -> pure {{ $type.Name }}_None  -- Corrected: using $type.Name
       {{- else }}
-      "{{ $value }}" -> pure {{ $value }}
+      "{{ $value }}" -> pure {{ $type.Name }}_{{ $value }}
       {{- end }}
 {{- end }}
       _ -> Left $ "Invalid {{ .Name }}: " <> str

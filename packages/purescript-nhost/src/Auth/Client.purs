@@ -16,17 +16,16 @@ import Effect.Aff (Aff, throwError)
 import Effect.Class (liftEffect)
 import Foreign.Object (Object)
 import Web.File.Blob (Blob)
-import Data.Argonaut.Parser (jsonParser)
 
 -- | The attestation statement format
 data AttestationFormat
-  = Packed
-  | Tpm
-  | AndroidKey
-  | AndroidSafetynet
-  | FidoU2f
-  | Apple
-  | None
+  = AttestationFormat_Packed
+  | AttestationFormat_Tpm
+  | AttestationFormat_AndroidKey
+  | AttestationFormat_AndroidSafetynet
+  | AttestationFormat_FidoU2f
+  | AttestationFormat_Apple
+  | AttestationFormat_None
 
 derive instance genericAttestationFormat :: Generic AttestationFormat _
 derive instance eqAttestationFormat :: Eq AttestationFormat
@@ -37,25 +36,25 @@ instance showAttestationFormat :: Show AttestationFormat where
 
 instance encodeJsonAttestationFormat :: EncodeJson AttestationFormat where
   encodeJson = case _ of
-    Packed -> encodeJson "Packed"
-    Tpm -> encodeJson "Tpm"
-    AndroidKey -> encodeJson "AndroidKey"
-    AndroidSafetynet -> encodeJson "AndroidSafetynet"
-    FidoU2f -> encodeJson "FidoU2f"
-    Apple -> encodeJson "Apple"
-    None -> encodeJson "None"
+    AttestationFormat_Packed -> encodeJson "Packed"
+    AttestationFormat_Tpm -> encodeJson "Tpm"
+    AttestationFormat_AndroidKey -> encodeJson "AndroidKey"
+    AttestationFormat_AndroidSafetynet -> encodeJson "AndroidSafetynet"
+    AttestationFormat_FidoU2f -> encodeJson "FidoU2f"
+    AttestationFormat_Apple -> encodeJson "Apple"
+    AttestationFormat_None -> encodeJson "None"
 
 instance decodeJsonAttestationFormat :: DecodeJson AttestationFormat where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "Packed" -> pure Packed
-      "Tpm" -> pure Tpm
-      "AndroidKey" -> pure AndroidKey
-      "AndroidSafetynet" -> pure AndroidSafetynet
-      "FidoU2f" -> pure FidoU2f
-      "Apple" -> pure Apple
-      "None" -> pure None
+      "Packed" -> pure AttestationFormat_Packed
+      "Tpm" -> pure AttestationFormat_Tpm
+      "AndroidKey" -> pure AttestationFormat_AndroidKey
+      "AndroidSafetynet" -> pure AttestationFormat_AndroidSafetynet
+      "FidoU2f" -> pure AttestationFormat_FidoU2f
+      "Apple" -> pure AttestationFormat_Apple
+      "None" -> pure AttestationFormat_None
       _ -> Left $ "Invalid AttestationFormat: " <> str
 
 -- | Map of extension outputs from the client
@@ -135,8 +134,8 @@ instance decodeJsonAuthenticatorAssertionResponse :: DecodeJson AuthenticatorAss
 
 -- | The authenticator attachment modality
 data AuthenticatorAttachment
-  = Platform
-  | CrossPlatform
+  = AuthenticatorAttachment_Platform
+  | AuthenticatorAttachment_CrossPlatform
 
 derive instance genericAuthenticatorAttachment :: Generic AuthenticatorAttachment _
 derive instance eqAuthenticatorAttachment :: Eq AuthenticatorAttachment
@@ -147,15 +146,15 @@ instance showAuthenticatorAttachment :: Show AuthenticatorAttachment where
 
 instance encodeJsonAuthenticatorAttachment :: EncodeJson AuthenticatorAttachment where
   encodeJson = case _ of
-    Platform -> encodeJson "Platform"
-    CrossPlatform -> encodeJson "CrossPlatform"
+    AuthenticatorAttachment_Platform -> encodeJson "Platform"
+    AuthenticatorAttachment_CrossPlatform -> encodeJson "CrossPlatform"
 
 instance decodeJsonAuthenticatorAttachment :: DecodeJson AuthenticatorAttachment where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "Platform" -> pure Platform
-      "CrossPlatform" -> pure CrossPlatform
+      "Platform" -> pure AuthenticatorAttachment_Platform
+      "CrossPlatform" -> pure AuthenticatorAttachment_CrossPlatform
       _ -> Left $ "Invalid AuthenticatorAttachment: " <> str
 
 -- |
@@ -266,12 +265,12 @@ instance decodeJsonAuthenticatorSelection :: DecodeJson AuthenticatorSelection w
 
 -- | The authenticator transports that can be used
 data AuthenticatorTransport
-  = Usb
-  | Nfc
-  | Ble
-  | SmartCard
-  | Hybrid
-  | Internal
+  = AuthenticatorTransport_Usb
+  | AuthenticatorTransport_Nfc
+  | AuthenticatorTransport_Ble
+  | AuthenticatorTransport_SmartCard
+  | AuthenticatorTransport_Hybrid
+  | AuthenticatorTransport_Internal
 
 derive instance genericAuthenticatorTransport :: Generic AuthenticatorTransport _
 derive instance eqAuthenticatorTransport :: Eq AuthenticatorTransport
@@ -282,31 +281,31 @@ instance showAuthenticatorTransport :: Show AuthenticatorTransport where
 
 instance encodeJsonAuthenticatorTransport :: EncodeJson AuthenticatorTransport where
   encodeJson = case _ of
-    Usb -> encodeJson "Usb"
-    Nfc -> encodeJson "Nfc"
-    Ble -> encodeJson "Ble"
-    SmartCard -> encodeJson "SmartCard"
-    Hybrid -> encodeJson "Hybrid"
-    Internal -> encodeJson "Internal"
+    AuthenticatorTransport_Usb -> encodeJson "Usb"
+    AuthenticatorTransport_Nfc -> encodeJson "Nfc"
+    AuthenticatorTransport_Ble -> encodeJson "Ble"
+    AuthenticatorTransport_SmartCard -> encodeJson "SmartCard"
+    AuthenticatorTransport_Hybrid -> encodeJson "Hybrid"
+    AuthenticatorTransport_Internal -> encodeJson "Internal"
 
 instance decodeJsonAuthenticatorTransport :: DecodeJson AuthenticatorTransport where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "Usb" -> pure Usb
-      "Nfc" -> pure Nfc
-      "Ble" -> pure Ble
-      "SmartCard" -> pure SmartCard
-      "Hybrid" -> pure Hybrid
-      "Internal" -> pure Internal
+      "Usb" -> pure AuthenticatorTransport_Usb
+      "Nfc" -> pure AuthenticatorTransport_Nfc
+      "Ble" -> pure AuthenticatorTransport_Ble
+      "SmartCard" -> pure AuthenticatorTransport_SmartCard
+      "Hybrid" -> pure AuthenticatorTransport_Hybrid
+      "Internal" -> pure AuthenticatorTransport_Internal
       _ -> Left $ "Invalid AuthenticatorTransport: " <> str
 
 -- | The attestation conveyance preference
 data ConveyancePreference
-  = None
-  | Indirect
-  | Direct
-  | Enterprise
+  = ConveyancePreference_None
+  | ConveyancePreference_Indirect
+  | ConveyancePreference_Direct
+  | ConveyancePreference_Enterprise
 
 derive instance genericConveyancePreference :: Generic ConveyancePreference _
 derive instance eqConveyancePreference :: Eq ConveyancePreference
@@ -317,19 +316,19 @@ instance showConveyancePreference :: Show ConveyancePreference where
 
 instance encodeJsonConveyancePreference :: EncodeJson ConveyancePreference where
   encodeJson = case _ of
-    None -> encodeJson "None"
-    Indirect -> encodeJson "Indirect"
-    Direct -> encodeJson "Direct"
-    Enterprise -> encodeJson "Enterprise"
+    ConveyancePreference_None -> encodeJson "None"
+    ConveyancePreference_Indirect -> encodeJson "Indirect"
+    ConveyancePreference_Direct -> encodeJson "Direct"
+    ConveyancePreference_Enterprise -> encodeJson "Enterprise"
 
 instance decodeJsonConveyancePreference :: DecodeJson ConveyancePreference where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "None" -> pure None
-      "Indirect" -> pure Indirect
-      "Direct" -> pure Direct
-      "Enterprise" -> pure Enterprise
+      "None" -> pure ConveyancePreference_None
+      "Indirect" -> pure ConveyancePreference_Indirect
+      "Direct" -> pure ConveyancePreference_Direct
+      "Enterprise" -> pure ConveyancePreference_Enterprise
       _ -> Left $ "Invalid ConveyancePreference: " <> str
 
 -- |
@@ -555,7 +554,7 @@ instance decodeJsonCredentialPropertiesOutput :: DecodeJson CredentialProperties
     pure { rk }
 
 -- | The valid credential types
-data CredentialType = PublicKey
+data CredentialType = CredentialType_PublicKey
 
 derive instance genericCredentialType :: Generic CredentialType _
 derive instance eqCredentialType :: Eq CredentialType
@@ -566,48 +565,48 @@ instance showCredentialType :: Show CredentialType where
 
 instance encodeJsonCredentialType :: EncodeJson CredentialType where
   encodeJson = case _ of
-    PublicKey -> encodeJson "PublicKey"
+    CredentialType_PublicKey -> encodeJson "PublicKey"
 
 instance decodeJsonCredentialType :: DecodeJson CredentialType where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "PublicKey" -> pure PublicKey
+      "PublicKey" -> pure CredentialType_PublicKey
       _ -> Left $ "Invalid CredentialType: " <> str
 
 -- | Error code identifying the specific application error
 data ErrorResponseError
-  = DefaultRoleMustBeInAllowedRoles
-  | DisabledEndpoint
-  | DisabledUser
-  | EmailAlreadyInUse
-  | EmailAlreadyVerified
-  | ForbiddenAnonymous
-  | InternalServerError
-  | InvalidEmailPassword
-  | InvalidRequest
-  | LocaleNotAllowed
-  | PasswordTooShort
-  | PasswordInHibpDatabase
-  | RedirectToNotAllowed
-  | RoleNotAllowed
-  | SignupDisabled
-  | UnverifiedUser
-  | UserNotAnonymous
-  | InvalidPat
-  | InvalidRefreshToken
-  | InvalidTicket
-  | DisabledMfaTotp
-  | NoTotpSecret
-  | InvalidTotp
-  | MfaTypeNotFound
-  | TotpAlreadyActive
-  | InvalidState
-  | OauthTokenEchangeFailed
-  | OauthProfileFetchFailed
-  | OauthProviderError
-  | InvalidOtp
-  | CannotSendSms
+  = ErrorResponseError_DefaultRoleMustBeInAllowedRoles
+  | ErrorResponseError_DisabledEndpoint
+  | ErrorResponseError_DisabledUser
+  | ErrorResponseError_EmailAlreadyInUse
+  | ErrorResponseError_EmailAlreadyVerified
+  | ErrorResponseError_ForbiddenAnonymous
+  | ErrorResponseError_InternalServerError
+  | ErrorResponseError_InvalidEmailPassword
+  | ErrorResponseError_InvalidRequest
+  | ErrorResponseError_LocaleNotAllowed
+  | ErrorResponseError_PasswordTooShort
+  | ErrorResponseError_PasswordInHibpDatabase
+  | ErrorResponseError_RedirectToNotAllowed
+  | ErrorResponseError_RoleNotAllowed
+  | ErrorResponseError_SignupDisabled
+  | ErrorResponseError_UnverifiedUser
+  | ErrorResponseError_UserNotAnonymous
+  | ErrorResponseError_InvalidPat
+  | ErrorResponseError_InvalidRefreshToken
+  | ErrorResponseError_InvalidTicket
+  | ErrorResponseError_DisabledMfaTotp
+  | ErrorResponseError_NoTotpSecret
+  | ErrorResponseError_InvalidTotp
+  | ErrorResponseError_MfaTypeNotFound
+  | ErrorResponseError_TotpAlreadyActive
+  | ErrorResponseError_InvalidState
+  | ErrorResponseError_OauthTokenEchangeFailed
+  | ErrorResponseError_OauthProfileFetchFailed
+  | ErrorResponseError_OauthProviderError
+  | ErrorResponseError_InvalidOtp
+  | ErrorResponseError_CannotSendSms
 
 derive instance genericErrorResponseError :: Generic ErrorResponseError _
 derive instance eqErrorResponseError :: Eq ErrorResponseError
@@ -618,73 +617,73 @@ instance showErrorResponseError :: Show ErrorResponseError where
 
 instance encodeJsonErrorResponseError :: EncodeJson ErrorResponseError where
   encodeJson = case _ of
-    DefaultRoleMustBeInAllowedRoles -> encodeJson "DefaultRoleMustBeInAllowedRoles"
-    DisabledEndpoint -> encodeJson "DisabledEndpoint"
-    DisabledUser -> encodeJson "DisabledUser"
-    EmailAlreadyInUse -> encodeJson "EmailAlreadyInUse"
-    EmailAlreadyVerified -> encodeJson "EmailAlreadyVerified"
-    ForbiddenAnonymous -> encodeJson "ForbiddenAnonymous"
-    InternalServerError -> encodeJson "InternalServerError"
-    InvalidEmailPassword -> encodeJson "InvalidEmailPassword"
-    InvalidRequest -> encodeJson "InvalidRequest"
-    LocaleNotAllowed -> encodeJson "LocaleNotAllowed"
-    PasswordTooShort -> encodeJson "PasswordTooShort"
-    PasswordInHibpDatabase -> encodeJson "PasswordInHibpDatabase"
-    RedirectToNotAllowed -> encodeJson "RedirectToNotAllowed"
-    RoleNotAllowed -> encodeJson "RoleNotAllowed"
-    SignupDisabled -> encodeJson "SignupDisabled"
-    UnverifiedUser -> encodeJson "UnverifiedUser"
-    UserNotAnonymous -> encodeJson "UserNotAnonymous"
-    InvalidPat -> encodeJson "InvalidPat"
-    InvalidRefreshToken -> encodeJson "InvalidRefreshToken"
-    InvalidTicket -> encodeJson "InvalidTicket"
-    DisabledMfaTotp -> encodeJson "DisabledMfaTotp"
-    NoTotpSecret -> encodeJson "NoTotpSecret"
-    InvalidTotp -> encodeJson "InvalidTotp"
-    MfaTypeNotFound -> encodeJson "MfaTypeNotFound"
-    TotpAlreadyActive -> encodeJson "TotpAlreadyActive"
-    InvalidState -> encodeJson "InvalidState"
-    OauthTokenEchangeFailed -> encodeJson "OauthTokenEchangeFailed"
-    OauthProfileFetchFailed -> encodeJson "OauthProfileFetchFailed"
-    OauthProviderError -> encodeJson "OauthProviderError"
-    InvalidOtp -> encodeJson "InvalidOtp"
-    CannotSendSms -> encodeJson "CannotSendSms"
+    ErrorResponseError_DefaultRoleMustBeInAllowedRoles -> encodeJson "DefaultRoleMustBeInAllowedRoles"
+    ErrorResponseError_DisabledEndpoint -> encodeJson "DisabledEndpoint"
+    ErrorResponseError_DisabledUser -> encodeJson "DisabledUser"
+    ErrorResponseError_EmailAlreadyInUse -> encodeJson "EmailAlreadyInUse"
+    ErrorResponseError_EmailAlreadyVerified -> encodeJson "EmailAlreadyVerified"
+    ErrorResponseError_ForbiddenAnonymous -> encodeJson "ForbiddenAnonymous"
+    ErrorResponseError_InternalServerError -> encodeJson "InternalServerError"
+    ErrorResponseError_InvalidEmailPassword -> encodeJson "InvalidEmailPassword"
+    ErrorResponseError_InvalidRequest -> encodeJson "InvalidRequest"
+    ErrorResponseError_LocaleNotAllowed -> encodeJson "LocaleNotAllowed"
+    ErrorResponseError_PasswordTooShort -> encodeJson "PasswordTooShort"
+    ErrorResponseError_PasswordInHibpDatabase -> encodeJson "PasswordInHibpDatabase"
+    ErrorResponseError_RedirectToNotAllowed -> encodeJson "RedirectToNotAllowed"
+    ErrorResponseError_RoleNotAllowed -> encodeJson "RoleNotAllowed"
+    ErrorResponseError_SignupDisabled -> encodeJson "SignupDisabled"
+    ErrorResponseError_UnverifiedUser -> encodeJson "UnverifiedUser"
+    ErrorResponseError_UserNotAnonymous -> encodeJson "UserNotAnonymous"
+    ErrorResponseError_InvalidPat -> encodeJson "InvalidPat"
+    ErrorResponseError_InvalidRefreshToken -> encodeJson "InvalidRefreshToken"
+    ErrorResponseError_InvalidTicket -> encodeJson "InvalidTicket"
+    ErrorResponseError_DisabledMfaTotp -> encodeJson "DisabledMfaTotp"
+    ErrorResponseError_NoTotpSecret -> encodeJson "NoTotpSecret"
+    ErrorResponseError_InvalidTotp -> encodeJson "InvalidTotp"
+    ErrorResponseError_MfaTypeNotFound -> encodeJson "MfaTypeNotFound"
+    ErrorResponseError_TotpAlreadyActive -> encodeJson "TotpAlreadyActive"
+    ErrorResponseError_InvalidState -> encodeJson "InvalidState"
+    ErrorResponseError_OauthTokenEchangeFailed -> encodeJson "OauthTokenEchangeFailed"
+    ErrorResponseError_OauthProfileFetchFailed -> encodeJson "OauthProfileFetchFailed"
+    ErrorResponseError_OauthProviderError -> encodeJson "OauthProviderError"
+    ErrorResponseError_InvalidOtp -> encodeJson "InvalidOtp"
+    ErrorResponseError_CannotSendSms -> encodeJson "CannotSendSms"
 
 instance decodeJsonErrorResponseError :: DecodeJson ErrorResponseError where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "DefaultRoleMustBeInAllowedRoles" -> pure DefaultRoleMustBeInAllowedRoles
-      "DisabledEndpoint" -> pure DisabledEndpoint
-      "DisabledUser" -> pure DisabledUser
-      "EmailAlreadyInUse" -> pure EmailAlreadyInUse
-      "EmailAlreadyVerified" -> pure EmailAlreadyVerified
-      "ForbiddenAnonymous" -> pure ForbiddenAnonymous
-      "InternalServerError" -> pure InternalServerError
-      "InvalidEmailPassword" -> pure InvalidEmailPassword
-      "InvalidRequest" -> pure InvalidRequest
-      "LocaleNotAllowed" -> pure LocaleNotAllowed
-      "PasswordTooShort" -> pure PasswordTooShort
-      "PasswordInHibpDatabase" -> pure PasswordInHibpDatabase
-      "RedirectToNotAllowed" -> pure RedirectToNotAllowed
-      "RoleNotAllowed" -> pure RoleNotAllowed
-      "SignupDisabled" -> pure SignupDisabled
-      "UnverifiedUser" -> pure UnverifiedUser
-      "UserNotAnonymous" -> pure UserNotAnonymous
-      "InvalidPat" -> pure InvalidPat
-      "InvalidRefreshToken" -> pure InvalidRefreshToken
-      "InvalidTicket" -> pure InvalidTicket
-      "DisabledMfaTotp" -> pure DisabledMfaTotp
-      "NoTotpSecret" -> pure NoTotpSecret
-      "InvalidTotp" -> pure InvalidTotp
-      "MfaTypeNotFound" -> pure MfaTypeNotFound
-      "TotpAlreadyActive" -> pure TotpAlreadyActive
-      "InvalidState" -> pure InvalidState
-      "OauthTokenEchangeFailed" -> pure OauthTokenEchangeFailed
-      "OauthProfileFetchFailed" -> pure OauthProfileFetchFailed
-      "OauthProviderError" -> pure OauthProviderError
-      "InvalidOtp" -> pure InvalidOtp
-      "CannotSendSms" -> pure CannotSendSms
+      "DefaultRoleMustBeInAllowedRoles" -> pure ErrorResponseError_DefaultRoleMustBeInAllowedRoles
+      "DisabledEndpoint" -> pure ErrorResponseError_DisabledEndpoint
+      "DisabledUser" -> pure ErrorResponseError_DisabledUser
+      "EmailAlreadyInUse" -> pure ErrorResponseError_EmailAlreadyInUse
+      "EmailAlreadyVerified" -> pure ErrorResponseError_EmailAlreadyVerified
+      "ForbiddenAnonymous" -> pure ErrorResponseError_ForbiddenAnonymous
+      "InternalServerError" -> pure ErrorResponseError_InternalServerError
+      "InvalidEmailPassword" -> pure ErrorResponseError_InvalidEmailPassword
+      "InvalidRequest" -> pure ErrorResponseError_InvalidRequest
+      "LocaleNotAllowed" -> pure ErrorResponseError_LocaleNotAllowed
+      "PasswordTooShort" -> pure ErrorResponseError_PasswordTooShort
+      "PasswordInHibpDatabase" -> pure ErrorResponseError_PasswordInHibpDatabase
+      "RedirectToNotAllowed" -> pure ErrorResponseError_RedirectToNotAllowed
+      "RoleNotAllowed" -> pure ErrorResponseError_RoleNotAllowed
+      "SignupDisabled" -> pure ErrorResponseError_SignupDisabled
+      "UnverifiedUser" -> pure ErrorResponseError_UnverifiedUser
+      "UserNotAnonymous" -> pure ErrorResponseError_UserNotAnonymous
+      "InvalidPat" -> pure ErrorResponseError_InvalidPat
+      "InvalidRefreshToken" -> pure ErrorResponseError_InvalidRefreshToken
+      "InvalidTicket" -> pure ErrorResponseError_InvalidTicket
+      "DisabledMfaTotp" -> pure ErrorResponseError_DisabledMfaTotp
+      "NoTotpSecret" -> pure ErrorResponseError_NoTotpSecret
+      "InvalidTotp" -> pure ErrorResponseError_InvalidTotp
+      "MfaTypeNotFound" -> pure ErrorResponseError_MfaTypeNotFound
+      "TotpAlreadyActive" -> pure ErrorResponseError_TotpAlreadyActive
+      "InvalidState" -> pure ErrorResponseError_InvalidState
+      "OauthTokenEchangeFailed" -> pure ErrorResponseError_OauthTokenEchangeFailed
+      "OauthProfileFetchFailed" -> pure ErrorResponseError_OauthProfileFetchFailed
+      "OauthProviderError" -> pure ErrorResponseError_OauthProviderError
+      "InvalidOtp" -> pure ErrorResponseError_InvalidOtp
+      "CannotSendSms" -> pure ErrorResponseError_CannotSendSms
       _ -> Left $ "Invalid ErrorResponseError: " <> str
 
 -- | Standardized error response
@@ -727,8 +726,8 @@ instance decodeJsonErrorResponse :: DecodeJson ErrorResponse where
 
 -- |
 data IdTokenProvider
-  = Apple
-  | Google
+  = IdTokenProvider_Apple
+  | IdTokenProvider_Google
 
 derive instance genericIdTokenProvider :: Generic IdTokenProvider _
 derive instance eqIdTokenProvider :: Eq IdTokenProvider
@@ -739,15 +738,15 @@ instance showIdTokenProvider :: Show IdTokenProvider where
 
 instance encodeJsonIdTokenProvider :: EncodeJson IdTokenProvider where
   encodeJson = case _ of
-    Apple -> encodeJson "Apple"
-    Google -> encodeJson "Google"
+    IdTokenProvider_Apple -> encodeJson "Apple"
+    IdTokenProvider_Google -> encodeJson "Google"
 
 instance decodeJsonIdTokenProvider :: DecodeJson IdTokenProvider where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "Apple" -> pure Apple
-      "Google" -> pure Google
+      "Apple" -> pure IdTokenProvider_Apple
+      "Google" -> pure IdTokenProvider_Google
       _ -> Left $ "Invalid IdTokenProvider: " <> str
 
 -- | JSON Web Key for JWT verification
@@ -894,7 +893,7 @@ instance decodeJsonMFAChallengePayload :: DecodeJson MFAChallengePayload where
     pure { ticket }
 
 -- |
-data OKResponse = OK
+data OKResponse = OKResponse_OK
 
 derive instance genericOKResponse :: Generic OKResponse _
 derive instance eqOKResponse :: Eq OKResponse
@@ -905,13 +904,13 @@ instance showOKResponse :: Show OKResponse where
 
 instance encodeJsonOKResponse :: EncodeJson OKResponse where
   encodeJson = case _ of
-    OK -> encodeJson "OK"
+    OKResponse_OK -> encodeJson "OK"
 
 instance decodeJsonOKResponse :: DecodeJson OKResponse where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "OK" -> pure OK
+      "OK" -> pure OKResponse_OK
       _ -> Left $ "Invalid OKResponse: " <> str
 
 -- |
@@ -1061,9 +1060,9 @@ instance decodeJsonPublicKeyCredentialDescriptor :: DecodeJson PublicKeyCredenti
 
 -- | Hints to help guide the user through the experience
 data PublicKeyCredentialHints
-  = SecurityKey
-  | ClientDevice
-  | Hybrid
+  = PublicKeyCredentialHints_SecurityKey
+  | PublicKeyCredentialHints_ClientDevice
+  | PublicKeyCredentialHints_Hybrid
 
 derive instance genericPublicKeyCredentialHints :: Generic PublicKeyCredentialHints _
 derive instance eqPublicKeyCredentialHints :: Eq PublicKeyCredentialHints
@@ -1074,17 +1073,17 @@ instance showPublicKeyCredentialHints :: Show PublicKeyCredentialHints where
 
 instance encodeJsonPublicKeyCredentialHints :: EncodeJson PublicKeyCredentialHints where
   encodeJson = case _ of
-    SecurityKey -> encodeJson "SecurityKey"
-    ClientDevice -> encodeJson "ClientDevice"
-    Hybrid -> encodeJson "Hybrid"
+    PublicKeyCredentialHints_SecurityKey -> encodeJson "SecurityKey"
+    PublicKeyCredentialHints_ClientDevice -> encodeJson "ClientDevice"
+    PublicKeyCredentialHints_Hybrid -> encodeJson "Hybrid"
 
 instance decodeJsonPublicKeyCredentialHints :: DecodeJson PublicKeyCredentialHints where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "SecurityKey" -> pure SecurityKey
-      "ClientDevice" -> pure ClientDevice
-      "Hybrid" -> pure Hybrid
+      "SecurityKey" -> pure PublicKeyCredentialHints_SecurityKey
+      "ClientDevice" -> pure PublicKeyCredentialHints_ClientDevice
+      "Hybrid" -> pure PublicKeyCredentialHints_Hybrid
       _ -> Left $ "Invalid PublicKeyCredentialHints: " <> str
 
 -- |
@@ -1205,9 +1204,9 @@ instance decodeJsonRelyingPartyEntity :: DecodeJson RelyingPartyEntity where
 
 -- | The resident key requirement
 data ResidentKeyRequirement
-  = Discouraged
-  | Preferred
-  | Required
+  = ResidentKeyRequirement_Discouraged
+  | ResidentKeyRequirement_Preferred
+  | ResidentKeyRequirement_Required
 
 derive instance genericResidentKeyRequirement :: Generic ResidentKeyRequirement _
 derive instance eqResidentKeyRequirement :: Eq ResidentKeyRequirement
@@ -1218,17 +1217,17 @@ instance showResidentKeyRequirement :: Show ResidentKeyRequirement where
 
 instance encodeJsonResidentKeyRequirement :: EncodeJson ResidentKeyRequirement where
   encodeJson = case _ of
-    Discouraged -> encodeJson "Discouraged"
-    Preferred -> encodeJson "Preferred"
-    Required -> encodeJson "Required"
+    ResidentKeyRequirement_Discouraged -> encodeJson "Discouraged"
+    ResidentKeyRequirement_Preferred -> encodeJson "Preferred"
+    ResidentKeyRequirement_Required -> encodeJson "Required"
 
 instance decodeJsonResidentKeyRequirement :: DecodeJson ResidentKeyRequirement where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "Discouraged" -> pure Discouraged
-      "Preferred" -> pure Preferred
-      "Required" -> pure Required
+      "Discouraged" -> pure ResidentKeyRequirement_Discouraged
+      "Preferred" -> pure ResidentKeyRequirement_Preferred
+      "Required" -> pure ResidentKeyRequirement_Required
       _ -> Left $ "Invalid ResidentKeyRequirement: " <> str
 
 -- | User authentication session containing tokens and user information
@@ -2133,8 +2132,8 @@ instance decodeJsonUser :: DecodeJson User where
 
 -- | Which sign-in method to use
 data UserDeanonymizeRequestSignInMethod
-  = EmailPassword
-  | Passwordless
+  = UserDeanonymizeRequestSignInMethod_EmailPassword
+  | UserDeanonymizeRequestSignInMethod_Passwordless
 
 derive instance genericUserDeanonymizeRequestSignInMethod :: Generic UserDeanonymizeRequestSignInMethod _
 derive instance eqUserDeanonymizeRequestSignInMethod :: Eq UserDeanonymizeRequestSignInMethod
@@ -2145,15 +2144,15 @@ instance showUserDeanonymizeRequestSignInMethod :: Show UserDeanonymizeRequestSi
 
 instance encodeJsonUserDeanonymizeRequestSignInMethod :: EncodeJson UserDeanonymizeRequestSignInMethod where
   encodeJson = case _ of
-    EmailPassword -> encodeJson "EmailPassword"
-    Passwordless -> encodeJson "Passwordless"
+    UserDeanonymizeRequestSignInMethod_EmailPassword -> encodeJson "EmailPassword"
+    UserDeanonymizeRequestSignInMethod_Passwordless -> encodeJson "Passwordless"
 
 instance decodeJsonUserDeanonymizeRequestSignInMethod :: DecodeJson UserDeanonymizeRequestSignInMethod where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "EmailPassword" -> pure EmailPassword
-      "Passwordless" -> pure Passwordless
+      "EmailPassword" -> pure UserDeanonymizeRequestSignInMethod_EmailPassword
+      "Passwordless" -> pure UserDeanonymizeRequestSignInMethod_Passwordless
       _ -> Left $ "Invalid UserDeanonymizeRequestSignInMethod: " <> str
 
 -- |
@@ -2306,8 +2305,8 @@ instance decodeJsonUserEntity :: DecodeJson UserEntity where
 
 -- | Type of MFA to activate. Use empty string to disable MFA.
 data UserMfaRequestActiveMfaType
-  = Totp
-  | None
+  = UserMfaRequestActiveMfaType_Totp
+  | UserMfaRequestActiveMfaType_None
 
 derive instance genericUserMfaRequestActiveMfaType :: Generic UserMfaRequestActiveMfaType _
 derive instance eqUserMfaRequestActiveMfaType :: Eq UserMfaRequestActiveMfaType
@@ -2318,15 +2317,15 @@ instance showUserMfaRequestActiveMfaType :: Show UserMfaRequestActiveMfaType whe
 
 instance encodeJsonUserMfaRequestActiveMfaType :: EncodeJson UserMfaRequestActiveMfaType where
   encodeJson = case _ of
-    Totp -> encodeJson "Totp"
-    None -> encodeJson ""
+    UserMfaRequestActiveMfaType_Totp -> encodeJson "Totp"
+    UserMfaRequestActiveMfaType_None -> encodeJson "" -- Corrected: using $type.Name
 
 instance decodeJsonUserMfaRequestActiveMfaType :: DecodeJson UserMfaRequestActiveMfaType where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "Totp" -> pure Totp
-      "" -> pure None
+      "Totp" -> pure UserMfaRequestActiveMfaType_Totp
+      "" -> pure UserMfaRequestActiveMfaType_None -- Corrected: using $type.Name
       _ -> Left $ "Invalid UserMfaRequestActiveMfaType: " <> str
 
 -- | Request to activate or deactivate multi-factor authentication
@@ -2426,9 +2425,9 @@ instance decodeJsonUserPasswordResetRequest :: DecodeJson UserPasswordResetReque
 
 -- | A requirement for user verification for the operation
 data UserVerificationRequirement
-  = Required
-  | Preferred
-  | Discouraged
+  = UserVerificationRequirement_Required
+  | UserVerificationRequirement_Preferred
+  | UserVerificationRequirement_Discouraged
 
 derive instance genericUserVerificationRequirement :: Generic UserVerificationRequirement _
 derive instance eqUserVerificationRequirement :: Eq UserVerificationRequirement
@@ -2439,17 +2438,17 @@ instance showUserVerificationRequirement :: Show UserVerificationRequirement whe
 
 instance encodeJsonUserVerificationRequirement :: EncodeJson UserVerificationRequirement where
   encodeJson = case _ of
-    Required -> encodeJson "Required"
-    Preferred -> encodeJson "Preferred"
-    Discouraged -> encodeJson "Discouraged"
+    UserVerificationRequirement_Required -> encodeJson "Required"
+    UserVerificationRequirement_Preferred -> encodeJson "Preferred"
+    UserVerificationRequirement_Discouraged -> encodeJson "Discouraged"
 
 instance decodeJsonUserVerificationRequirement :: DecodeJson UserVerificationRequirement where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "Required" -> pure Required
-      "Preferred" -> pure Preferred
-      "Discouraged" -> pure Discouraged
+      "Required" -> pure UserVerificationRequirement_Required
+      "Preferred" -> pure UserVerificationRequirement_Preferred
+      "Discouraged" -> pure UserVerificationRequirement_Discouraged
       _ -> Left $ "Invalid UserVerificationRequirement: " <> str
 
 -- |
@@ -2531,21 +2530,21 @@ instance decodeJsonVerifyTokenRequest :: DecodeJson VerifyTokenRequest where
 type RedirectToQuery = String
 -- |
 data SignInProvider
-  = Apple
-  | Github
-  | Google
-  | Linkedin
-  | Discord
-  | Spotify
-  | Twitch
-  | Gitlab
-  | Bitbucket
-  | Workos
-  | Azuread
-  | Strava
-  | Facebook
-  | Windowslive
-  | Twitter
+  = SignInProvider_Apple
+  | SignInProvider_Github
+  | SignInProvider_Google
+  | SignInProvider_Linkedin
+  | SignInProvider_Discord
+  | SignInProvider_Spotify
+  | SignInProvider_Twitch
+  | SignInProvider_Gitlab
+  | SignInProvider_Bitbucket
+  | SignInProvider_Workos
+  | SignInProvider_Azuread
+  | SignInProvider_Strava
+  | SignInProvider_Facebook
+  | SignInProvider_Windowslive
+  | SignInProvider_Twitter
 
 derive instance genericSignInProvider :: Generic SignInProvider _
 derive instance eqSignInProvider :: Eq SignInProvider
@@ -2556,51 +2555,51 @@ instance showSignInProvider :: Show SignInProvider where
 
 instance encodeJsonSignInProvider :: EncodeJson SignInProvider where
   encodeJson = case _ of
-    Apple -> encodeJson "Apple"
-    Github -> encodeJson "Github"
-    Google -> encodeJson "Google"
-    Linkedin -> encodeJson "Linkedin"
-    Discord -> encodeJson "Discord"
-    Spotify -> encodeJson "Spotify"
-    Twitch -> encodeJson "Twitch"
-    Gitlab -> encodeJson "Gitlab"
-    Bitbucket -> encodeJson "Bitbucket"
-    Workos -> encodeJson "Workos"
-    Azuread -> encodeJson "Azuread"
-    Strava -> encodeJson "Strava"
-    Facebook -> encodeJson "Facebook"
-    Windowslive -> encodeJson "Windowslive"
-    Twitter -> encodeJson "Twitter"
+    SignInProvider_Apple -> encodeJson "Apple"
+    SignInProvider_Github -> encodeJson "Github"
+    SignInProvider_Google -> encodeJson "Google"
+    SignInProvider_Linkedin -> encodeJson "Linkedin"
+    SignInProvider_Discord -> encodeJson "Discord"
+    SignInProvider_Spotify -> encodeJson "Spotify"
+    SignInProvider_Twitch -> encodeJson "Twitch"
+    SignInProvider_Gitlab -> encodeJson "Gitlab"
+    SignInProvider_Bitbucket -> encodeJson "Bitbucket"
+    SignInProvider_Workos -> encodeJson "Workos"
+    SignInProvider_Azuread -> encodeJson "Azuread"
+    SignInProvider_Strava -> encodeJson "Strava"
+    SignInProvider_Facebook -> encodeJson "Facebook"
+    SignInProvider_Windowslive -> encodeJson "Windowslive"
+    SignInProvider_Twitter -> encodeJson "Twitter"
 
 instance decodeJsonSignInProvider :: DecodeJson SignInProvider where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "Apple" -> pure Apple
-      "Github" -> pure Github
-      "Google" -> pure Google
-      "Linkedin" -> pure Linkedin
-      "Discord" -> pure Discord
-      "Spotify" -> pure Spotify
-      "Twitch" -> pure Twitch
-      "Gitlab" -> pure Gitlab
-      "Bitbucket" -> pure Bitbucket
-      "Workos" -> pure Workos
-      "Azuread" -> pure Azuread
-      "Strava" -> pure Strava
-      "Facebook" -> pure Facebook
-      "Windowslive" -> pure Windowslive
-      "Twitter" -> pure Twitter
+      "Apple" -> pure SignInProvider_Apple
+      "Github" -> pure SignInProvider_Github
+      "Google" -> pure SignInProvider_Google
+      "Linkedin" -> pure SignInProvider_Linkedin
+      "Discord" -> pure SignInProvider_Discord
+      "Spotify" -> pure SignInProvider_Spotify
+      "Twitch" -> pure SignInProvider_Twitch
+      "Gitlab" -> pure SignInProvider_Gitlab
+      "Bitbucket" -> pure SignInProvider_Bitbucket
+      "Workos" -> pure SignInProvider_Workos
+      "Azuread" -> pure SignInProvider_Azuread
+      "Strava" -> pure SignInProvider_Strava
+      "Facebook" -> pure SignInProvider_Facebook
+      "Windowslive" -> pure SignInProvider_Windowslive
+      "Twitter" -> pure SignInProvider_Twitter
       _ -> Left $ "Invalid SignInProvider: " <> str
 
 -- | Ticket
 type TicketQuery = String
 -- | Type of the ticket
 data TicketTypeQuery
-  = EmailVerify
-  | EmailConfirmChange
-  | SigninPasswordless
-  | PasswordReset
+  = TicketTypeQuery_EmailVerify
+  | TicketTypeQuery_EmailConfirmChange
+  | TicketTypeQuery_SigninPasswordless
+  | TicketTypeQuery_PasswordReset
 
 derive instance genericTicketTypeQuery :: Generic TicketTypeQuery _
 derive instance eqTicketTypeQuery :: Eq TicketTypeQuery
@@ -2611,19 +2610,19 @@ instance showTicketTypeQuery :: Show TicketTypeQuery where
 
 instance encodeJsonTicketTypeQuery :: EncodeJson TicketTypeQuery where
   encodeJson = case _ of
-    EmailVerify -> encodeJson "EmailVerify"
-    EmailConfirmChange -> encodeJson "EmailConfirmChange"
-    SigninPasswordless -> encodeJson "SigninPasswordless"
-    PasswordReset -> encodeJson "PasswordReset"
+    TicketTypeQuery_EmailVerify -> encodeJson "EmailVerify"
+    TicketTypeQuery_EmailConfirmChange -> encodeJson "EmailConfirmChange"
+    TicketTypeQuery_SigninPasswordless -> encodeJson "SigninPasswordless"
+    TicketTypeQuery_PasswordReset -> encodeJson "PasswordReset"
 
 instance decodeJsonTicketTypeQuery :: DecodeJson TicketTypeQuery where
   decodeJson json = do
     str <- decodeJson json
     case str of
-      "EmailVerify" -> pure EmailVerify
-      "EmailConfirmChange" -> pure EmailConfirmChange
-      "SigninPasswordless" -> pure SigninPasswordless
-      "PasswordReset" -> pure PasswordReset
+      "EmailVerify" -> pure TicketTypeQuery_EmailVerify
+      "EmailConfirmChange" -> pure TicketTypeQuery_EmailConfirmChange
+      "SigninPasswordless" -> pure TicketTypeQuery_SigninPasswordless
+      "PasswordReset" -> pure TicketTypeQuery_PasswordReset
       _ -> Left $ "Invalid TicketTypeQuery: " <> str
 
 -- |
